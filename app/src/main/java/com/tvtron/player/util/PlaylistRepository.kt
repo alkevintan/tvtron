@@ -63,6 +63,10 @@ object PlaylistRepository {
             db.epgDao().deleteChannelsForPlaylist(playlist.id)
             if (parsed.channels.isNotEmpty()) db.epgDao().insertChannels(parsed.channels)
             if (parsed.programs.isNotEmpty()) db.epgDao().insertPrograms(parsed.programs)
+            // Mark a successful EPG pull only when at least one program landed.
+            if (parsed.programs.isNotEmpty()) {
+                SettingsManager.setLastEpgRefresh(context, System.currentTimeMillis())
+            }
         } catch (t: Throwable) {
             Log.e(TAG, "refreshEpg(${playlist.id}): parse failed", t)
         } finally {

@@ -16,6 +16,7 @@ object SettingsManager {
     private const val KEY_EPG_DAYS_FORWARD = "epg_days_forward"
     private const val KEY_AUTO_UPDATE_CHECK = "auto_update_check"
     private const val KEY_LAST_UPDATE_CHECK = "last_update_check"
+    private const val KEY_LAST_EPG_REFRESH = "last_epg_refresh"
 
     enum class Theme(val label: String) { SYSTEM("System"), LIGHT("Light"), DARK("Dark") }
 
@@ -56,6 +57,10 @@ object SettingsManager {
 
     fun getLastUpdateCheck(c: Context): Long = prefs(c).getLong(KEY_LAST_UPDATE_CHECK, 0L)
     fun setLastUpdateCheck(c: Context, ts: Long) { prefs(c).edit().putLong(KEY_LAST_UPDATE_CHECK, ts).apply() }
+
+    /** Wall-clock timestamp of the last successful XMLTV parse + insert (any playlist). */
+    fun getLastEpgRefresh(c: Context): Long = prefs(c).getLong(KEY_LAST_EPG_REFRESH, 0L)
+    fun setLastEpgRefresh(c: Context, ts: Long) { prefs(c).edit().putLong(KEY_LAST_EPG_REFRESH, ts).apply() }
 
     private inline fun <reified E : Enum<E>> enumOr(name: String?, default: E): E =
         runCatching { enumValueOf<E>(name ?: default.name) }.getOrDefault(default)

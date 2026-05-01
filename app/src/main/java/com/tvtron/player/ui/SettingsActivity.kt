@@ -126,13 +126,23 @@ class SettingsActivity : AppCompatActivity() {
             withContext(Dispatchers.IO) {
                 runCatching { com.tvtron.player.util.PlaylistRepository.refreshAllEpg(this@SettingsActivity) }
             }
+            updateEpgLabels()
             Toast.makeText(this@SettingsActivity, "EPG refresh complete", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        updateEpgLabels()
     }
 
     private fun updateEpgLabels() {
         findViewById<TextView>(R.id.epgBackLabel).text = "${SettingsManager.getEpgDaysBack(this)} day(s)"
         findViewById<TextView>(R.id.epgFwdLabel).text = "${SettingsManager.getEpgDaysForward(this)} day(s)"
+        val last = SettingsManager.getLastEpgRefresh(this)
+        findViewById<TextView>(R.id.epgRefreshSummary).text = if (last == 0L) "Never"
+            else "Last successful pull: " +
+                DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(Date(last))
     }
 
     private fun showDayChoiceDialog(title: String, choices: IntArray, current: Int, onPick: (Int) -> Unit) {
