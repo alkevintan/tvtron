@@ -20,6 +20,15 @@ interface ChannelDao {
     @Query("SELECT DISTINCT groupTitle FROM channels WHERE playlistId = :pid ORDER BY groupTitle COLLATE NOCASE ASC")
     fun observeCategories(pid: Long): Flow<List<String>>
 
+    @Query("SELECT * FROM channels ORDER BY playlistId ASC, sortIndex ASC, id ASC")
+    fun observeAll(): Flow<List<Channel>>
+
+    @Query("SELECT * FROM channels ORDER BY playlistId ASC, sortIndex ASC, id ASC")
+    suspend fun getAll(): List<Channel>
+
+    @Query("SELECT DISTINCT groupTitle FROM channels ORDER BY groupTitle COLLATE NOCASE ASC")
+    fun observeAllCategories(): Flow<List<String>>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(channels: List<Channel>): List<Long>
 

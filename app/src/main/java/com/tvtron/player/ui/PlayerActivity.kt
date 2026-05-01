@@ -162,6 +162,7 @@ class PlayerActivity : AppCompatActivity() {
         val ch = currentChannel ?: return
         val idx = siblings.indexOfFirst { it.id == ch.id }
         channelNumber.text = if (idx >= 0) "%03d".format(idx + 1) else ""
+        channelNumber.visibility = if (SettingsManager.isShowChannelNumber(this)) View.VISIBLE else View.GONE
     }
 
     private suspend fun loadEpg(ch: Channel) {

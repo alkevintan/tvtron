@@ -36,7 +36,10 @@ class PlaylistManagerActivity : AppCompatActivity() {
                 startActivity(Intent(this, PlaylistEditActivity::class.java)
                     .putExtra(PlaylistEditActivity.EXTRA_PLAYLIST_ID, p.id))
             },
-            onDelete = { p -> confirmDelete(p) }
+            onDelete = { p -> confirmDelete(p) },
+            onShare = { p ->
+                ShareQrDialog.newInstance(p).show(supportFragmentManager, "share_qr")
+            }
         )
         rv.adapter = adapter
 

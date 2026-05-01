@@ -36,13 +36,16 @@ class SettingsActivity : AppCompatActivity() {
         setupAppearance()
         setupEpg()
         setupUpdates()
-        setupAbout()
     }
 
     private fun setupPlayer() {
         val skin = findViewById<SwitchMaterial>(R.id.trinitronSwitch)
         skin.isChecked = SettingsManager.isTrinitronSkin(this)
         skin.setOnCheckedChangeListener { _, on -> SettingsManager.setTrinitronSkin(this, on) }
+
+        val chNum = findViewById<SwitchMaterial>(R.id.showChannelNumberSwitch)
+        chNum.isChecked = SettingsManager.isShowChannelNumber(this)
+        chNum.setOnCheckedChangeListener { _, on -> SettingsManager.setShowChannelNumber(this, on) }
 
         updateAspectLabel()
         findViewById<View>(R.id.aspectRow).setOnClickListener { showAspectDialog() }
@@ -138,40 +141,6 @@ class SettingsActivity : AppCompatActivity() {
         val auto = findViewById<SwitchMaterial>(R.id.autoUpdateSwitch)
         auto.isChecked = SettingsManager.isAutoUpdateCheck(this)
         auto.setOnCheckedChangeListener { _, on -> SettingsManager.setAutoUpdateCheck(this, on) }
-
-        updateLastCheckLabel()
-        findViewById<View>(R.id.checkUpdateRow).setOnClickListener { checkUpdate() }
-    }
-
-    private fun updateLastCheckLabel() {
-        val last = SettingsManager.getLastUpdateCheck(this)
-        findViewById<TextView>(R.id.lastCheckLabel).text =
-            if (last == 0L) "Never checked"
-            else "Last check: " + DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(Date(last))
-    }
-
-    private fun checkUpdate() {
-        Toast.makeText(this, "Checking…", Toast.LENGTH_SHORT).show()
-        lifecycleScope.launch {
-            val release = withContext(Dispatchers.IO) { UpdateChecker.fetchLatest(this@SettingsActivity) }
-            SettingsManager.setLastUpdateCheck(this@SettingsActivity, System.currentTimeMillis())
-            updateLastCheckLabel()
-            if (release == null) {
-                Toast.makeText(this@SettingsActivity, "No release found", Toast.LENGTH_SHORT).show()
-                return@launch
-            }
-            val current = packageManager.getPackageInfo(packageName, PackageManager.GET_META_DATA).versionName ?: "0.0.0"
-            if (!UpdateChecker.isNewer(release, current)) {
-                Toast.makeText(this@SettingsActivity, "Up to date ($current)", Toast.LENGTH_SHORT).show()
-                return@launch
-            }
-            UpdateDialog.show(this@SettingsActivity, release)
-        }
-    }
-
-    private fun setupAbout() {
-        val v = packageManager.getPackageInfo(packageName, PackageManager.GET_META_DATA).versionName ?: "0.0.0"
-        findViewById<TextView>(R.id.versionLabel).text = "Version $v"
     }
 
     override fun onSupportNavigateUp(): Boolean { finish(); return true }

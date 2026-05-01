@@ -11,6 +11,9 @@ interface FavoriteDao {
     @Query("SELECT channelId FROM favorites WHERE playlistId = :pid")
     fun observeIds(pid: Long): Flow<List<Long>>
 
+    @Query("SELECT channelId FROM favorites")
+    fun observeAllIds(): Flow<List<Long>>
+
     @Query("SELECT EXISTS(SELECT 1 FROM favorites WHERE channelId = :cid)")
     suspend fun isFavorite(cid: Long): Boolean
 

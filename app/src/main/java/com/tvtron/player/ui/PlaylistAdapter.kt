@@ -15,13 +15,15 @@ import java.util.Date
 
 class PlaylistAdapter(
     private val onClick: (Playlist) -> Unit,
-    private val onDelete: (Playlist) -> Unit
+    private val onDelete: (Playlist) -> Unit,
+    private val onShare: (Playlist) -> Unit
 ) : ListAdapter<Playlist, PlaylistAdapter.VH>(DIFF) {
 
     class VH(v: View) : RecyclerView.ViewHolder(v) {
         val name: TextView = v.findViewById(R.id.playlist_name)
         val source: TextView = v.findViewById(R.id.playlist_source)
         val meta: TextView = v.findViewById(R.id.playlist_meta)
+        val share: ImageButton = v.findViewById(R.id.playlist_share)
         val delete: ImageButton = v.findViewById(R.id.playlist_delete)
     }
 
@@ -39,6 +41,7 @@ class PlaylistAdapter(
         else "never"
         h.meta.text = "${p.autoRefresh.name.lowercase()} · last refresh: $refreshTxt"
         h.itemView.setOnClickListener { onClick(p) }
+        h.share.setOnClickListener { onShare(p) }
         h.delete.setOnClickListener { onDelete(p) }
     }
 

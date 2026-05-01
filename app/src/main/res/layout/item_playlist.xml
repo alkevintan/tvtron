@@ -17,7 +17,7 @@
         android:ellipsize="end"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/playlist_delete" />
+        app:layout_constraintEnd_toStartOf="@id/playlist_share" />
 
     <TextView
         android:id="@+id/playlist_source"
@@ -29,7 +29,7 @@
         android:ellipsize="middle"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/playlist_name"
-        app:layout_constraintEnd_toStartOf="@id/playlist_delete" />
+        app:layout_constraintEnd_toStartOf="@id/playlist_share" />
 
     <TextView
         android:id="@+id/playlist_meta"
@@ -39,7 +39,18 @@
         android:textColor="?android:attr/textColorSecondary"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/playlist_source"
-        app:layout_constraintEnd_toStartOf="@id/playlist_delete" />
+        app:layout_constraintEnd_toStartOf="@id/playlist_share" />
+
+    <ImageButton
+        android:id="@+id/playlist_share"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:src="@drawable/ic_qr_share"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/share_playlist"
+        app:layout_constraintEnd_toStartOf="@id/playlist_delete"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
 
     <ImageButton
         android:id="@+id/playlist_delete"

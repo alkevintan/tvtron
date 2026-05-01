@@ -57,6 +57,17 @@
                             android:layout_height="wrap_content" />
                     </LinearLayout>
 
+                    <LinearLayout style="@style/SettingsSwitchRow">
+                        <LinearLayout style="@style/SettingsLabelColumn">
+                            <TextView style="@style/SettingsTitle" android:text="@string/show_channel_number" />
+                            <TextView style="@style/SettingsSummary" android:text="@string/show_channel_number_summary" />
+                        </LinearLayout>
+                        <com.google.android.material.switchmaterial.SwitchMaterial
+                            android:id="@+id/showChannelNumberSwitch"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
+                    </LinearLayout>
+
                     <LinearLayout
                         android:id="@+id/aspectRow"
                         style="@style/SettingsClickableRow">
@@ -162,41 +173,6 @@
                             android:id="@+id/autoUpdateSwitch"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content" />
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:id="@+id/checkUpdateRow"
-                        style="@style/SettingsClickableRow">
-                        <LinearLayout style="@style/SettingsLabelColumn">
-                            <TextView style="@style/SettingsTitle" android:text="@string/check_for_updates" />
-                            <TextView android:id="@+id/lastCheckLabel" style="@style/SettingsSummary" />
-                        </LinearLayout>
-                    </LinearLayout>
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- About -->
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="2dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
-
-                    <TextView
-                        style="@style/SettingsSectionHeader"
-                        android:text="About" />
-
-                    <LinearLayout style="@style/SettingsClickableRow">
-                        <LinearLayout style="@style/SettingsLabelColumn">
-                            <TextView style="@style/SettingsTitle" android:text="@string/app_name" />
-                            <TextView android:id="@+id/versionLabel" style="@style/SettingsSummary" />
-                        </LinearLayout>
                     </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>

@@ -6,6 +6,10 @@
     <string name="playlists">Playlists</string>
     <string name="add_playlist">Add Playlist</string>
     <string name="edit_playlist">Edit Playlist</string>
+    <string name="share_playlist">Share playlist</string>
+    <string name="show_channel_number">Show channel number on stream</string>
+    <string name="show_channel_number_summary">Display the channel number badge as an OSD overlay</string>
+    <string name="all_playlists">All playlists</string>
     <string name="no_playlists">No playlists yet.\nTap + to add an M3U source.</string>
     <string name="no_channels">No channels in this playlist.</string>
 

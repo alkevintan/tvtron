@@ -49,4 +49,10 @@ interface EpgDao {
         WHERE playlistId = :pid AND title LIKE '%' || :q || '%'
     """)
     suspend fun searchProgramTitlesXmltvIds(pid: Long, q: String): List<String>
+
+    @Query("""
+        SELECT DISTINCT xmltvId FROM epg_programs
+        WHERE title LIKE '%' || :q || '%'
+    """)
+    suspend fun searchProgramTitlesXmltvIdsAcrossAll(q: String): List<String>
 }

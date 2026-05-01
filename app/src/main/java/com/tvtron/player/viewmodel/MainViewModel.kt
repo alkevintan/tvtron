@@ -20,6 +20,11 @@ import kotlinx.coroutines.launch
 
 class MainViewModel(app: Application) : AndroidViewModel(app) {
 
+    companion object {
+        /** Sentinel: combine channels from every playlist into one list. */
+        const val ALL_PLAYLISTS_ID = 0L
+    }
+
     private val db = AppDatabase.getInstance(app)
 
     val playlists: StateFlow<List<Playlist>> = db.playlistDao().observeAll()
@@ -39,18 +44,30 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
 
     @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
     val channels: StateFlow<List<Channel>> = _currentPlaylistId.flatMapLatest { pid ->
-        if (pid <= 0L) flowOf(emptyList()) else db.channelDao().observeForPlaylist(pid)
+        when {
+            pid == ALL_PLAYLISTS_ID -> db.channelDao().observeAll()
+            pid > 0L -> db.channelDao().observeForPlaylist(pid)
+            else -> flowOf(emptyList())
+        }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
     val categories: StateFlow<List<String>> = _currentPlaylistId.flatMapLatest { pid ->
-        if (pid <= 0L) flowOf(emptyList()) else db.channelDao().observeCategories(pid)
+        when {
+            pid == ALL_PLAYLISTS_ID -> db.channelDao().observeAllCategories()
+            pid > 0L -> db.channelDao().observeCategories(pid)
+            else -> flowOf(emptyList())
+        }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
     val favoriteIds: StateFlow<Set<Long>> = _currentPlaylistId
         .flatMapLatest { pid ->
-            if (pid <= 0L) flowOf(emptyList()) else db.favoriteDao().observeIds(pid)
+            when {
+                pid == ALL_PLAYLISTS_ID -> db.favoriteDao().observeAllIds()
+                pid > 0L -> db.favoriteDao().observeIds(pid)
+                else -> flowOf(emptyList())
+            }
         }
         .let { upstream ->
             kotlinx.coroutines.flow.flow { upstream.collect { emit(it.toSet()) } }
@@ -66,7 +83,11 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         if (q.isBlank()) byFav
         else {
             val pid = _currentPlaylistId.value
-            val xmltvIds = if (pid > 0) db.epgDao().searchProgramTitlesXmltvIds(pid, q).toSet() else emptySet()
+            val xmltvIds = when {
+                pid == ALL_PLAYLISTS_ID -> db.epgDao().searchProgramTitlesXmltvIdsAcrossAll(q).toSet()
+                pid > 0L -> db.epgDao().searchProgramTitlesXmltvIds(pid, q).toSet()
+                else -> emptySet()
+            }
             val ql = q.lowercase()
             byFav.filter {
                 it.name.lowercase().contains(ql) ||
@@ -78,7 +99,9 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     init {
         viewModelScope.launch {
             playlists.collect { list ->
-                if (_currentPlaylistId.value <= 0L && list.isNotEmpty()) {
+                val cur = _currentPlaylistId.value
+                // Only auto-pick first when no explicit choice has been made yet.
+                if (cur != ALL_PLAYLISTS_ID && cur <= 0L && list.isNotEmpty()) {
                     setCurrentPlaylist(list.first().id)
                 }
                 triggerOnLaunchRefresh(list)
@@ -96,7 +119,6 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                     runCatching { PlaylistRepository.refresh(getApplication(), p) }
                 }
             }
-        // also re-apply scheduled jobs
         RefreshScheduler.applyAll(getApplication(), list)
     }
 
@@ -119,10 +141,14 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
 
     fun refreshCurrent() {
         val pid = _currentPlaylistId.value
-        if (pid <= 0L) return
         viewModelScope.launch {
-            db.playlistDao().getById(pid)?.let {
-                runCatching { PlaylistRepository.refresh(getApplication(), it) }
+            when {
+                pid == ALL_PLAYLISTS_ID -> db.playlistDao().getAll().forEach {
+                    runCatching { PlaylistRepository.refresh(getApplication(), it) }
+                }
+                pid > 0L -> db.playlistDao().getById(pid)?.let {
+                    runCatching { PlaylistRepository.refresh(getApplication(), it) }
+                }
             }
         }
     }

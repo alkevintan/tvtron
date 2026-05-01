@@ -121,6 +121,7 @@ class PlaybackService : LifecycleService() {
         exoPlayer?.addListener(object : Player.Listener {
             override fun onIsPlayingChanged(isPlaying: Boolean) {
                 _isPlaying.value = isPlaying
+                PlaybackState.isPlaying.value = isPlaying
                 updatePlaybackState()
                 updateNotification()
             }
@@ -196,6 +197,7 @@ class PlaybackService : LifecycleService() {
         exoPlayer?.stop()
         _isPlaying.value = false
         _isBuffering.value = false
+        PlaybackState.isPlaying.value = false
         releaseWakeLock()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             stopForeground(STOP_FOREGROUND_REMOVE)
@@ -335,6 +337,7 @@ class PlaybackService : LifecycleService() {
         exoPlayer = null
         mediaSession.release()
         releaseWakeLock()
+        PlaybackState.isPlaying.value = false
         super.onDestroy()
     }
 }

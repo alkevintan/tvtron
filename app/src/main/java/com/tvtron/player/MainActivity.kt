@@ -28,6 +28,9 @@ import com.tvtron.player.ui.PlaylistEditActivity
 import com.tvtron.player.ui.PlaylistManagerActivity
 import com.tvtron.player.ui.SettingsActivity
 import com.tvtron.player.ui.UpdateDialog
+import com.tvtron.player.service.PlaybackState
+import androidx.core.graphics.drawable.DrawableCompat
+import androidx.core.content.ContextCompat
 import com.tvtron.player.util.SettingsManager
 import com.tvtron.player.util.UpdateChecker
 import com.tvtron.player.viewmodel.MainViewModel
@@ -46,6 +49,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var swipe: SwipeRefreshLayout
     private lateinit var empty: TextView
     private var favoritesMenuItem: MenuItem? = null
+    private var nowPlayingMenuItem: MenuItem? = null
     private var initialRouteHandled = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -75,8 +79,24 @@ class MainActivity : AppCompatActivity() {
         observePlaylists()
         observeCategories()
         observeChannels()
+        observePlaybackState()
         routeOnLaunch()
         maybeAutoCheckUpdate()
+    }
+
+    private fun observePlaybackState() {
+        lifecycleScope.launch {
+            PlaybackState.isPlaying.collect { applyNowPlayingTint(it) }
+        }
+    }
+
+    private fun applyNowPlayingTint(playing: Boolean) {
+        val item = nowPlayingMenuItem ?: return
+        val drawable = ContextCompat.getDrawable(this, R.drawable.ic_tv)?.mutate() ?: return
+        val color = if (playing) ContextCompat.getColor(this, R.color.colorAccent)
+                    else ContextCompat.getColor(this, R.color.colorOnPrimary)
+        DrawableCompat.setTint(drawable, color)
+        item.icon = drawable
     }
 
     /** Polls GitHub Releases on launch, throttled to once per 24h. Off-by-toggle. */
@@ -147,23 +167,29 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun renderSpinner(list: List<Playlist>) {
-        val labels = if (list.isEmpty()) listOf("No playlists — add one") else list.map { it.name }
-        val sa = ArrayAdapter(this, android.R.layout.simple_spinner_item, labels).apply {
+        if (list.isEmpty()) {
+            spinner.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, listOf("No playlists — add one")).apply {
+                setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            }
+            return
+        }
+        // Prepend a virtual "All playlists" entry that maps to ALL_PLAYLISTS_ID.
+        data class Entry(val id: Long, val label: String)
+        val entries = listOf(Entry(MainViewModel.ALL_PLAYLISTS_ID, getString(R.string.all_playlists))) +
+            list.map { Entry(it.id, it.name) }
+        spinner.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, entries.map { it.label }).apply {
             setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         }
-        spinner.adapter = sa
-        if (list.isNotEmpty()) {
-            val curId = vm.currentPlaylistId.value
-            val idx = list.indexOfFirst { it.id == curId }.takeIf { it >= 0 } ?: 0
-            spinner.setSelection(idx, false)
-            spinner.onItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(p: android.widget.AdapterView<*>?, v: View?, pos: Int, id: Long) {
-                    list.getOrNull(pos)?.let {
-                        if (it.id != vm.currentPlaylistId.value) vm.setCurrentPlaylist(it.id)
-                    }
+        val curId = vm.currentPlaylistId.value
+        val idx = entries.indexOfFirst { it.id == curId }.takeIf { it >= 0 } ?: 1 // default to first real playlist
+        spinner.setSelection(idx, false)
+        spinner.onItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(p: android.widget.AdapterView<*>?, v: View?, pos: Int, id: Long) {
+                entries.getOrNull(pos)?.let {
+                    if (it.id != vm.currentPlaylistId.value) vm.setCurrentPlaylist(it.id)
                 }
-                override fun onNothingSelected(p: android.widget.AdapterView<*>?) {}
             }
+            override fun onNothingSelected(p: android.widget.AdapterView<*>?) {}
         }
     }
 
@@ -211,15 +237,14 @@ class MainActivity : AppCompatActivity() {
 
     /** Lazy fill of nowTitle/nextTitle for visible channels (cheap N-query, EPG is local). */
     private fun enrichEpgAsync(channels: List<Channel>) {
-        val pid = vm.currentPlaylistId.value
-        if (pid <= 0L) return
+        if (channels.isEmpty()) return
         lifecycleScope.launch {
             val db = AppDatabase.getInstance(this@MainActivity)
             val now = System.currentTimeMillis()
             val enriched = channels.map { c ->
                 val (cur, upcoming) = if (c.tvgId.isNotBlank()) {
-                    val cur = db.epgDao().getCurrent(pid, c.tvgId, now)
-                    val up = db.epgDao().getUpcoming(pid, c.tvgId, now, limit = 1).firstOrNull()
+                    val cur = db.epgDao().getCurrent(c.playlistId, c.tvgId, now)
+                    val up = db.epgDao().getUpcoming(c.playlistId, c.tvgId, now, limit = 1).firstOrNull()
                     cur to up
                 } else null to null
                 ChannelAdapter.Item(
@@ -249,6 +274,8 @@ class MainActivity : AppCompatActivity() {
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_main, menu)
         favoritesMenuItem = menu.findItem(R.id.action_favorites)
+        nowPlayingMenuItem = menu.findItem(R.id.action_now_playing)
+        applyNowPlayingTint(PlaybackState.isPlaying.value)
         val searchItem = menu.findItem(R.id.action_search)
         val sv = searchItem.actionView as SearchView
         sv.queryHint = getString(R.string.search_hint)
@@ -272,7 +299,45 @@ class MainActivity : AppCompatActivity() {
             R.id.action_refresh -> { vm.refreshCurrent(); true }
             R.id.action_playlists -> { startActivity(Intent(this, PlaylistManagerActivity::class.java)); true }
             R.id.action_settings -> { startActivity(Intent(this, SettingsActivity::class.java)); true }
+            R.id.action_check_update -> { manualCheckUpdate(); true }
+            R.id.action_about -> { showAbout(); true }
             else -> super.onOptionsItemSelected(item)
         }
+    }
+
+    private fun manualCheckUpdate() {
+        android.widget.Toast.makeText(this, "Checking…", android.widget.Toast.LENGTH_SHORT).show()
+        lifecycleScope.launch {
+            val release = withContext(Dispatchers.IO) {
+                runCatching { UpdateChecker.fetchLatest(this@MainActivity) }.getOrNull()
+            }
+            SettingsManager.setLastUpdateCheck(this@MainActivity, System.currentTimeMillis())
+            if (release == null) {
+                android.widget.Toast.makeText(this@MainActivity, "No release found", android.widget.Toast.LENGTH_SHORT).show()
+                return@launch
+            }
+            val current = packageManager.getPackageInfo(packageName, android.content.pm.PackageManager.GET_META_DATA).versionName ?: "0.0.0"
+            if (!UpdateChecker.isNewer(release, current)) {
+                android.widget.Toast.makeText(this@MainActivity, "Up to date ($current)", android.widget.Toast.LENGTH_SHORT).show()
+            } else {
+                UpdateDialog.show(this@MainActivity, release)
+            }
+        }
+    }
+
+    private fun showAbout() {
+        val v = packageManager.getPackageInfo(packageName, android.content.pm.PackageManager.GET_META_DATA).versionName ?: "0.0.0"
+        val owner = getString(R.string.update_github_owner)
+        val repo = getString(R.string.update_github_repo)
+        val msg = buildString {
+            append("TVTron ").append(v).append("\n\n")
+            append("Sideload-only Android IPTV player.\n\n")
+            if (owner.isNotBlank() && repo.isNotBlank()) append("https://github.com/$owner/$repo")
+        }
+        AlertDialog.Builder(this)
+            .setTitle(R.string.app_name)
+            .setMessage(msg)
+            .setPositiveButton(android.R.string.ok, null)
+            .show()
     }
 }
