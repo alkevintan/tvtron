@@ -80,32 +80,16 @@ class PlaylistManagerActivity : AppCompatActivity() {
     }
 
     private fun handleScan(text: String) {
-        val (name, url, epg) = parsePlaylistPayload(text) ?: run {
+        val payload = com.tvtron.player.util.TvtronUri.parse(text) as? com.tvtron.player.util.TvtronUri.Payload.PlaylistPayload
+        if (payload == null) {
             Toast.makeText(this, R.string.scan_qr_invalid, Toast.LENGTH_SHORT).show()
             return
         }
         startActivity(Intent(this, PlaylistEditActivity::class.java).apply {
-            putExtra(PlaylistEditActivity.EXTRA_PREFILL_NAME, name)
-            putExtra(PlaylistEditActivity.EXTRA_PREFILL_SOURCE, url)
-            putExtra(PlaylistEditActivity.EXTRA_PREFILL_EPG, epg)
+            putExtra(PlaylistEditActivity.EXTRA_PREFILL_NAME, payload.name)
+            putExtra(PlaylistEditActivity.EXTRA_PREFILL_SOURCE, payload.source)
+            putExtra(PlaylistEditActivity.EXTRA_PREFILL_EPG, payload.epg)
         })
-    }
-
-    /** Accepts both the new tvtron://playlist?n=&u=&e= URI and the legacy `TVTRON|name|url|epg` format. */
-    private fun parsePlaylistPayload(text: String): Triple<String, String, String>? {
-        val trimmed = text.trim()
-        if (trimmed.startsWith("tvtron://", ignoreCase = true)) {
-            val uri = runCatching { android.net.Uri.parse(trimmed) }.getOrNull() ?: return null
-            if (!uri.host.equals("playlist", true)) return null
-            val u = uri.getQueryParameter("u").orEmpty()
-            if (u.isBlank()) return null
-            return Triple(uri.getQueryParameter("n").orEmpty(), u, uri.getQueryParameter("e").orEmpty())
-        }
-        val parts = trimmed.split('|')
-        if (parts.size >= 3 && parts[0] == "TVTRON") {
-            return Triple(parts.getOrNull(1).orEmpty(), parts.getOrNull(2).orEmpty(), parts.getOrNull(3).orEmpty())
-        }
-        return null
     }
 
     private fun observe() {

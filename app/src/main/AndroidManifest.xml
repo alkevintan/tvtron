@@ -72,9 +72,16 @@
 
         <activity
             android:name=".ui.ChannelEditActivity"
-            android:exported="false"
+            android:exported="true"
             android:label="@string/add_channel"
-            android:parentActivityName=".MainActivity" />
+            android:parentActivityName=".MainActivity">
+            <intent-filter android:autoVerify="false">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="tvtron" android:host="channel" />
+            </intent-filter>
+        </activity>
 
         <activity
             android:name=".ui.SettingsActivity"

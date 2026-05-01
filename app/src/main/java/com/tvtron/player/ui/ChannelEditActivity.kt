@@ -22,6 +22,13 @@ class ChannelEditActivity : AppCompatActivity() {
     companion object {
         const val EXTRA_PRESELECT_PLAYLIST = "preselect_playlist"
         const val EXTRA_CHANNEL_ID = "channel_id"
+        const val EXTRA_PREFILL_NAME = "prefill_name"
+        const val EXTRA_PREFILL_STREAM = "prefill_stream"
+        const val EXTRA_PREFILL_LOGO = "prefill_logo"
+        const val EXTRA_PREFILL_GROUP = "prefill_group"
+        const val EXTRA_PREFILL_TVG = "prefill_tvg"
+        const val EXTRA_PREFILL_UA = "prefill_ua"
+        const val EXTRA_PREFILL_REFERER = "prefill_referer"
     }
 
     private var existing: Channel? = null
@@ -95,8 +102,31 @@ class ChannelEditActivity : AppCompatActivity() {
                 val pre = intent.getLongExtra(EXTRA_PRESELECT_PLAYLIST, -1L)
                 val idx = list.indexOfFirst { it.id == pre }.takeIf { it >= 0 } ?: 0
                 spinner.setSelection(idx, false)
+                applyDeepLinkOrPrefill()
             }
         }
+    }
+
+    /** Prefill from a tvtron://channel deep link OR EXTRA_PREFILL_* extras (from in-app scanner). */
+    private fun applyDeepLinkOrPrefill() {
+        val data = intent.data
+        if (data != null && data.scheme.equals("tvtron", true) && data.host.equals("channel", true)) {
+            data.getQueryParameter("n")?.takeIf { it.isNotBlank() }?.let { name.setText(it) }
+            data.getQueryParameter("u")?.takeIf { it.isNotBlank() }?.let { stream.setText(it) }
+            data.getQueryParameter("l")?.takeIf { it.isNotBlank() }?.let { logo.setText(it) }
+            data.getQueryParameter("g")?.takeIf { it.isNotBlank() }?.let { group.setText(it) }
+            data.getQueryParameter("t")?.takeIf { it.isNotBlank() }?.let { tvgId.setText(it) }
+            data.getQueryParameter("ua")?.takeIf { it.isNotBlank() }?.let { ua.setText(it) }
+            data.getQueryParameter("r")?.takeIf { it.isNotBlank() }?.let { referer.setText(it) }
+            return
+        }
+        intent.getStringExtra(EXTRA_PREFILL_NAME)?.takeIf { it.isNotBlank() }?.let { name.setText(it) }
+        intent.getStringExtra(EXTRA_PREFILL_STREAM)?.takeIf { it.isNotBlank() }?.let { stream.setText(it) }
+        intent.getStringExtra(EXTRA_PREFILL_LOGO)?.takeIf { it.isNotBlank() }?.let { logo.setText(it) }
+        intent.getStringExtra(EXTRA_PREFILL_GROUP)?.takeIf { it.isNotBlank() }?.let { group.setText(it) }
+        intent.getStringExtra(EXTRA_PREFILL_TVG)?.takeIf { it.isNotBlank() }?.let { tvgId.setText(it) }
+        intent.getStringExtra(EXTRA_PREFILL_UA)?.takeIf { it.isNotBlank() }?.let { ua.setText(it) }
+        intent.getStringExtra(EXTRA_PREFILL_REFERER)?.takeIf { it.isNotBlank() }?.let { referer.setText(it) }
     }
 
     private fun save() {

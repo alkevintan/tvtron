@@ -29,8 +29,13 @@ import com.tvtron.player.ui.PlaylistManagerActivity
 import com.tvtron.player.ui.SettingsActivity
 import com.tvtron.player.ui.UpdateDialog
 import com.tvtron.player.service.PlaybackState
+import com.tvtron.player.ui.ChannelEditActivity
+import com.tvtron.player.ui.ShareChannelQrDialog
+import com.tvtron.player.util.TvtronUri
 import androidx.core.graphics.drawable.DrawableCompat
 import androidx.core.content.ContextCompat
+import com.journeyapps.barcodescanner.ScanContract
+import com.journeyapps.barcodescanner.ScanOptions
 import com.tvtron.player.util.SettingsManager
 import com.tvtron.player.util.UpdateChecker
 import com.tvtron.player.viewmodel.MainViewModel
@@ -51,6 +56,11 @@ class MainActivity : AppCompatActivity() {
     private var favoritesMenuItem: MenuItem? = null
     private var nowPlayingMenuItem: MenuItem? = null
     private var initialRouteHandled = false
+
+    private val scanLauncher = registerForActivityResult(ScanContract()) { result ->
+        val contents = result?.contents ?: return@registerForActivityResult
+        handleScan(contents)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -264,19 +274,55 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showChannelMenu(ch: Channel) {
-        val items = arrayOf("Edit", "Delete")
+        val items = arrayOf("Edit", "Delete", "Share QR")
         AlertDialog.Builder(this)
             .setTitle(ch.name)
             .setItems(items) { _, which ->
                 when (which) {
                     0 -> startActivity(
-                        Intent(this, com.tvtron.player.ui.ChannelEditActivity::class.java)
-                            .putExtra(com.tvtron.player.ui.ChannelEditActivity.EXTRA_CHANNEL_ID, ch.id)
+                        Intent(this, ChannelEditActivity::class.java)
+                            .putExtra(ChannelEditActivity.EXTRA_CHANNEL_ID, ch.id)
                     )
                     1 -> confirmDeleteChannel(ch)
+                    2 -> ShareChannelQrDialog.newInstance(ch).show(supportFragmentManager, "share_ch_qr")
                 }
             }
             .show()
+    }
+
+    private fun startScan() {
+        val opts = ScanOptions()
+            .setDesiredBarcodeFormats(ScanOptions.QR_CODE)
+            .setPrompt(getString(R.string.scan_qr_prompt))
+            .setBeepEnabled(false)
+            .setOrientationLocked(false)
+        scanLauncher.launch(opts)
+    }
+
+    private fun handleScan(text: String) {
+        when (val payload = TvtronUri.parse(text)) {
+            is TvtronUri.Payload.PlaylistPayload -> startActivity(
+                Intent(this, PlaylistEditActivity::class.java).apply {
+                    putExtra(PlaylistEditActivity.EXTRA_PREFILL_NAME, payload.name)
+                    putExtra(PlaylistEditActivity.EXTRA_PREFILL_SOURCE, payload.source)
+                    putExtra(PlaylistEditActivity.EXTRA_PREFILL_EPG, payload.epg)
+                }
+            )
+            is TvtronUri.Payload.ChannelPayload -> startActivity(
+                Intent(this, ChannelEditActivity::class.java).apply {
+                    putExtra(ChannelEditActivity.EXTRA_PRESELECT_PLAYLIST,
+                        vm.currentPlaylistId.value.takeIf { it > 0L } ?: -1L)
+                    putExtra(ChannelEditActivity.EXTRA_PREFILL_NAME, payload.name)
+                    putExtra(ChannelEditActivity.EXTRA_PREFILL_STREAM, payload.streamUrl)
+                    putExtra(ChannelEditActivity.EXTRA_PREFILL_LOGO, payload.logo)
+                    putExtra(ChannelEditActivity.EXTRA_PREFILL_GROUP, payload.groupTitle)
+                    putExtra(ChannelEditActivity.EXTRA_PREFILL_TVG, payload.tvgId)
+                    putExtra(ChannelEditActivity.EXTRA_PREFILL_UA, payload.userAgent)
+                    putExtra(ChannelEditActivity.EXTRA_PREFILL_REFERER, payload.referer)
+                }
+            )
+            null -> android.widget.Toast.makeText(this, R.string.scan_qr_invalid, android.widget.Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun confirmDeleteChannel(ch: Channel) {
@@ -338,6 +384,7 @@ class MainActivity : AppCompatActivity() {
             }
             R.id.action_refresh -> { vm.refreshCurrent(); true }
             R.id.action_add_channel -> { openAddChannel(); true }
+            R.id.action_scan_qr -> { startScan(); true }
             R.id.action_playlists -> { startActivity(Intent(this, PlaylistManagerActivity::class.java)); true }
             R.id.action_settings -> { startActivity(Intent(this, SettingsActivity::class.java)); true }
             R.id.action_check_update -> { manualCheckUpdate(); true }
