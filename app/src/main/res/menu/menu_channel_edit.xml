@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/action_scan_qr"
+        android:title="@string/scan_qr"
+        android:icon="@drawable/ic_qr_scan"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/action_delete"
+        android:title="Delete"
+        android:icon="@drawable/ic_delete"
+        android:visible="false"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/action_save"
+        android:title="Save"
+        android:icon="@drawable/ic_check"
+        app:showAsAction="ifRoom" />
+</menu>

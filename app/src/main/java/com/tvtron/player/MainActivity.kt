@@ -58,10 +58,6 @@ class MainActivity : AppCompatActivity() {
     private var nowPlayingMenuItem: MenuItem? = null
     private var initialRouteHandled = false
 
-    private val scanLauncher = registerForActivityResult(ScanContract()) { result ->
-        val contents = result?.contents ?: return@registerForActivityResult
-        handleScan(contents)
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -289,41 +285,6 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
-    private fun startScan() {
-        val opts = ScanOptions()
-            .setDesiredBarcodeFormats(ScanOptions.QR_CODE)
-            .setPrompt(getString(R.string.scan_qr_prompt))
-            .setBeepEnabled(false)
-            .setOrientationLocked(false)
-        scanLauncher.launch(opts)
-    }
-
-    private fun handleScan(text: String) {
-        when (val payload = TvtronUri.parse(text)) {
-            is TvtronUri.Payload.PlaylistPayload -> startActivity(
-                Intent(this, PlaylistEditActivity::class.java).apply {
-                    putExtra(PlaylistEditActivity.EXTRA_PREFILL_NAME, payload.name)
-                    putExtra(PlaylistEditActivity.EXTRA_PREFILL_SOURCE, payload.source)
-                    putExtra(PlaylistEditActivity.EXTRA_PREFILL_EPG, payload.epg)
-                }
-            )
-            is TvtronUri.Payload.ChannelPayload -> startActivity(
-                Intent(this, ChannelEditActivity::class.java).apply {
-                    putExtra(ChannelEditActivity.EXTRA_PRESELECT_PLAYLIST,
-                        vm.currentPlaylistId.value.takeIf { it > 0L } ?: -1L)
-                    putExtra(ChannelEditActivity.EXTRA_PREFILL_NAME, payload.name)
-                    putExtra(ChannelEditActivity.EXTRA_PREFILL_STREAM, payload.streamUrl)
-                    putExtra(ChannelEditActivity.EXTRA_PREFILL_LOGO, payload.logo)
-                    putExtra(ChannelEditActivity.EXTRA_PREFILL_GROUP, payload.groupTitle)
-                    putExtra(ChannelEditActivity.EXTRA_PREFILL_TVG, payload.tvgId)
-                    putExtra(ChannelEditActivity.EXTRA_PREFILL_UA, payload.userAgent)
-                    putExtra(ChannelEditActivity.EXTRA_PREFILL_REFERER, payload.referer)
-                }
-            )
-            null -> android.widget.Toast.makeText(this, R.string.scan_qr_invalid, android.widget.Toast.LENGTH_SHORT).show()
-        }
-    }
-
     private fun openAddChannel() {
         val cur = vm.currentPlaylistId.value.takeIf { it > 0L } ?: -1L
         startActivity(
@@ -368,7 +329,6 @@ class MainActivity : AppCompatActivity() {
             }
             R.id.action_refresh -> { vm.refreshCurrent(); true }
             R.id.action_add_channel -> { openAddChannel(); true }
-            R.id.action_scan_qr -> { startScan(); true }
             R.id.action_playlists -> { startActivity(Intent(this, PlaylistManagerActivity::class.java)); true }
             R.id.action_settings -> { startActivity(Intent(this, SettingsActivity::class.java)); true }
             R.id.action_about -> {

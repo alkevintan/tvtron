@@ -29,9 +29,15 @@ object PlaylistRepository {
         val parsed = M3uParser.parse(m3uText)
         Log.i(TAG, "refresh(${playlist.id}): parsed ${parsed.channels.size} channels, urlTvg='${parsed.urlTvg}'")
 
-        val channels = parsed.channels.mapIndexed { idx, p -> p.toEntity(playlist.id, idx) }
-        db.channelDao().deleteForPlaylist(playlist.id)
-        if (channels.isNotEmpty()) db.channelDao().insertAll(channels)
+        // Re-import only auto-imported channels; user-added entries stay put.
+        val newChannels = parsed.channels.mapIndexed { idx, p -> p.toEntity(playlist.id, idx) }
+        db.channelDao().deleteAutoForPlaylist(playlist.id)
+        if (newChannels.isNotEmpty()) db.channelDao().insertAll(newChannels)
+        // Push surviving user-added channels to the end so they sort after the imported ones.
+        val userAdded = db.channelDao().getForPlaylist(playlist.id).filter { it.isUserAdded }
+        userAdded.forEachIndexed { i, ch ->
+            db.channelDao().update(ch.copy(sortIndex = newChannels.size + i))
+        }
 
         val epgUrl = playlist.epgUrl.ifBlank { parsed.urlTvg }
         if (epgUrl.isNotBlank()) {

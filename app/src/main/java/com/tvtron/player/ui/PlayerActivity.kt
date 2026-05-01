@@ -72,6 +72,7 @@ class PlayerActivity : AppCompatActivity() {
     private var lastOrientation: Int = 0
     private var previousChannelId: Long = -1L
     private var skinOverride: Boolean = false  // temp full-screen exit from skin
+    private var recreating: Boolean = false
 
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
@@ -130,9 +131,11 @@ class PlayerActivity : AppCompatActivity() {
 
     override fun onConfigurationChanged(newConfig: android.content.res.Configuration) {
         super.onConfigurationChanged(newConfig)
+        if (recreating) return
         if (trinitronSkin && newConfig.orientation != lastOrientation) {
             lastOrientation = newConfig.orientation
-            recreate()
+            recreating = true
+            window.decorView.post { recreate() }
         }
     }
 
@@ -227,8 +230,11 @@ class PlayerActivity : AppCompatActivity() {
         findViewById<View?>(R.id.btn_skin_fullscreen)?.let { btn ->
             btn.visibility = if (skinSetting) View.VISIBLE else View.GONE
             btn.setOnClickListener {
+                if (recreating) return@setOnClickListener
+                recreating = true
                 skinOverride = !skinOverride
-                recreate()
+                // Defer to next loop tick so the click handler unwinds before activity is torn down.
+                btn.post { recreate() }
             }
         }
         findViewById<View?>(R.id.btn_panel_vol_minus)?.setOnClickListener { adjustVolume(-1) }

@@ -1,18 +1,22 @@
 package com.tvtron.player.ui
 
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.ArrayAdapter
-import android.widget.Button
 import android.widget.Spinner
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.textfield.TextInputEditText
+import com.journeyapps.barcodescanner.ScanContract
+import com.journeyapps.barcodescanner.ScanOptions
 import com.tvtron.player.R
 import com.tvtron.player.data.AppDatabase
 import com.tvtron.player.data.Channel
 import com.tvtron.player.data.Playlist
+import com.tvtron.player.util.TvtronUri
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -42,6 +46,22 @@ class ChannelEditActivity : AppCompatActivity() {
     private lateinit var referer: TextInputEditText
 
     private var playlists: List<Playlist> = emptyList()
+    private var deleteMenuItem: MenuItem? = null
+
+    private val scanLauncher = registerForActivityResult(ScanContract()) { result ->
+        val payload = result?.contents?.let { TvtronUri.parse(it) } as? TvtronUri.Payload.ChannelPayload ?: run {
+            if (result?.contents != null)
+                Toast.makeText(this, R.string.scan_qr_invalid, Toast.LENGTH_SHORT).show()
+            return@registerForActivityResult
+        }
+        if (payload.name.isNotBlank()) name.setText(payload.name)
+        if (payload.streamUrl.isNotBlank()) stream.setText(payload.streamUrl)
+        if (payload.logo.isNotBlank()) logo.setText(payload.logo)
+        if (payload.groupTitle.isNotBlank()) group.setText(payload.groupTitle)
+        if (payload.tvgId.isNotBlank()) tvgId.setText(payload.tvgId)
+        if (payload.userAgent.isNotBlank()) ua.setText(payload.userAgent)
+        if (payload.referer.isNotBlank()) referer.setText(payload.referer)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,11 +81,31 @@ class ChannelEditActivity : AppCompatActivity() {
         ua = findViewById(R.id.edit_channel_ua)
         referer = findViewById(R.id.edit_channel_referer)
 
-        findViewById<Button>(R.id.btn_save_channel).setOnClickListener { save() }
-        findViewById<Button>(R.id.btn_cancel_channel).setOnClickListener { finish() }
-        findViewById<Button>(R.id.btn_delete_channel).setOnClickListener { confirmDelete() }
-
         loadPlaylists()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_channel_edit, menu)
+        deleteMenuItem = menu.findItem(R.id.action_delete)
+        deleteMenuItem?.isVisible = existing != null
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
+        R.id.action_save -> { save(); true }
+        R.id.action_delete -> { confirmDelete(); true }
+        R.id.action_scan_qr -> { startScan(); true }
+        else -> super.onOptionsItemSelected(item)
+    }
+
+    private fun startScan() {
+        scanLauncher.launch(
+            ScanOptions()
+                .setDesiredBarcodeFormats(ScanOptions.QR_CODE)
+                .setPrompt(getString(R.string.scan_qr_prompt))
+                .setBeepEnabled(false)
+                .setOrientationLocked(false)
+        )
     }
 
     private fun confirmDelete() {
@@ -108,8 +148,8 @@ class ChannelEditActivity : AppCompatActivity() {
                 if (ch == null) { finish(); return@launch }
                 existing = ch
                 supportActionBar?.title = getString(R.string.edit_channel)
-                findViewById<Button>(R.id.btn_delete_channel).visibility = android.view.View.VISIBLE
-                findViewById<Button>(R.id.btn_save_channel).setText(R.string.update)
+                deleteMenuItem?.isVisible = true
+                invalidateOptionsMenu()
                 name.setText(ch.name)
                 stream.setText(ch.streamUrl)
                 logo.setText(ch.logo)
