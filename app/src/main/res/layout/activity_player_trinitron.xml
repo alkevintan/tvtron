@@ -1,0 +1,371 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#0A0F16">
+
+    <LinearLayout
+        android:id="@+id/tv_body"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:layout_margin="12dp"
+        android:padding="16dp"
+        android:background="@drawable/bg_tv_body">
+
+            <!-- Screen wrapper (16:9 aspect via inner ConstraintLayout) -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <FrameLayout
+                    android:id="@+id/screen_wrap"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:padding="6dp"
+                    android:background="@drawable/bg_tv_screen"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintDimensionRatio="H,16:9">
+
+                    <com.google.android.exoplayer2.ui.PlayerView
+                        android:id="@+id/player_view"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        app:use_controller="false"
+                        app:resize_mode="fit"
+                        app:surface_type="surface_view" />
+
+                    <ProgressBar
+                        android:id="@+id/buffer_progress"
+                        android:layout_width="56dp"
+                        android:layout_height="56dp"
+                        android:layout_gravity="center"
+                        android:visibility="gone"
+                        android:indeterminate="true" />
+
+                    <LinearLayout
+                        android:id="@+id/top_overlay"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:padding="10dp"
+                        android:gravity="center_vertical"
+                        android:background="#80000000">
+
+                        <ImageButton
+                            android:id="@+id/btn_back"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:src="@drawable/ic_arrow_back"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:contentDescription="@android:string/cancel" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="8dp"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/channel_title"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:textColor="#FFFFFF"
+                                android:textSize="16sp"
+                                android:textStyle="bold"
+                                android:singleLine="true"
+                                android:ellipsize="end" />
+
+                            <TextView
+                                android:id="@+id/epg_now"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:textColor="#FFFFFF"
+                                android:textSize="12sp"
+                                android:singleLine="true"
+                                android:ellipsize="end" />
+
+                            <TextView
+                                android:id="@+id/epg_next"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:textColor="#CCCCCC"
+                                android:textSize="11sp"
+                                android:singleLine="true"
+                                android:ellipsize="end" />
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                    <!-- Persistent channel number OSD (outside overlays so always visible) -->
+                    <TextView
+                        android:id="@+id/channel_number"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="top|end"
+                        android:layout_margin="10dp"
+                        android:paddingHorizontal="8dp"
+                        android:paddingVertical="4dp"
+                        android:background="#33FF66"
+                        android:textColor="#000000"
+                        android:textStyle="bold"
+                        android:textSize="20sp"
+                        android:fontFamily="monospace"
+                        android:minWidth="52dp"
+                        android:gravity="center" />
+
+                    <LinearLayout
+                        android:id="@+id/bottom_overlay"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="bottom"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:padding="8dp"
+                        android:background="#80000000">
+
+                        <ImageButton
+                            android:id="@+id/btn_prev"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:src="@drawable/ic_skip_prev"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:contentDescription="@string/next_program" />
+
+                        <ImageButton
+                            android:id="@+id/btn_play_pause"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:layout_marginHorizontal="6dp"
+                            android:src="@drawable/ic_pause"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:contentDescription="@string/now_playing" />
+
+                        <ImageButton
+                            android:id="@+id/btn_next"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:src="@drawable/ic_skip_next"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:contentDescription="@string/next_program" />
+
+                        <View
+                            android:layout_width="8dp"
+                            android:layout_height="1dp" />
+
+                        <ImageButton
+                            android:id="@+id/btn_vol_down"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:src="@drawable/ic_volume_down"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:contentDescription="VOL-" />
+
+                        <ImageButton
+                            android:id="@+id/btn_vol_up"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:src="@drawable/ic_volume_up"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:contentDescription="VOL+" />
+
+                        <View
+                            android:layout_width="0dp"
+                            android:layout_height="1dp"
+                            android:layout_weight="1" />
+
+                        <Button
+                            android:id="@+id/btn_aspect"
+                            style="?android:attr/buttonBarButtonStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/aspect_fit"
+                            android:textColor="#FFFFFF" />
+
+                        <Button
+                            android:id="@+id/btn_audio"
+                            style="?android:attr/buttonBarButtonStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/audio_track"
+                            android:textColor="#FFFFFF" />
+
+                        <Button
+                            android:id="@+id/btn_subs"
+                            style="?android:attr/buttonBarButtonStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/subtitle_track"
+                            android:textColor="#FFFFFF" />
+
+                        <ImageButton
+                            android:id="@+id/btn_fav"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:src="@drawable/ic_favorite_off"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:contentDescription="@string/favorites" />
+                    </LinearLayout>
+
+                    <com.tvtron.player.ui.RetroVolumeBarView
+                        android:id="@+id/volume_osd"
+                        android:layout_width="280dp"
+                        android:layout_height="72dp"
+                        android:layout_gravity="center"
+                        android:visibility="gone" />
+                </FrameLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <!-- Brand label -->
+            <TextView
+                android:id="@+id/tv_brand"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="TVTRON"
+                android:textColor="#1A1D22"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:fontFamily="sans-serif-condensed"
+                android:letterSpacing="0.2"
+                android:layout_marginTop="8dp" />
+
+            <!-- Speaker + power/vol panel -->
+            <LinearLayout
+                android:id="@+id/control_panel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="6dp">
+
+                <View
+                    android:id="@+id/speaker_left"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="28dp"
+                    android:background="@drawable/bg_tv_speaker"
+                    android:layout_marginEnd="8dp" />
+
+                <Button
+                    android:id="@+id/btn_power"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="ON/OFF"
+                    android:textSize="10sp"
+                    android:textAllCaps="false"
+                    android:textColor="#FFFFFF"
+                    android:textStyle="bold"
+                    android:minWidth="0dp"
+                    android:minHeight="0dp"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="6dp"
+                    android:background="@drawable/bg_tv_button" />
+
+                <View
+                    android:id="@+id/speaker_right"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="28dp"
+                    android:background="@drawable/bg_tv_speaker"
+                    android:layout_marginStart="8dp" />
+            </LinearLayout>
+
+            <!-- Number keypad / mute / OK — fills remaining vertical space -->
+            <LinearLayout
+                android:id="@+id/keypad"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_marginTop="14dp"
+                android:padding="10dp"
+                android:background="@drawable/bg_tv_speaker">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="6dp">
+                    <Button android:id="@+id/btn_num_1" style="@style/TVTronKeypadKey"
+                        android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="1" />
+                    <Button android:id="@+id/btn_num_2" style="@style/TVTronKeypadKey"
+                        android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="2" />
+                    <Button android:id="@+id/btn_num_3" style="@style/TVTronKeypadKey"
+                        android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="3" />
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="6dp">
+                    <Button android:id="@+id/btn_num_4" style="@style/TVTronKeypadKey"
+                        android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="4" />
+                    <Button android:id="@+id/btn_num_5" style="@style/TVTronKeypadKey"
+                        android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="5" />
+                    <Button android:id="@+id/btn_num_6" style="@style/TVTronKeypadKey"
+                        android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="6" />
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="6dp">
+                    <Button android:id="@+id/btn_num_7" style="@style/TVTronKeypadKey"
+                        android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="7" />
+                    <Button android:id="@+id/btn_num_8" style="@style/TVTronKeypadKey"
+                        android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="8" />
+                    <Button android:id="@+id/btn_num_9" style="@style/TVTronKeypadKey"
+                        android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="9" />
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="6dp">
+                    <Button android:id="@+id/btn_guide" style="@style/TVTronKeypadKey"
+                        android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="GUIDE" android:textSize="14sp" />
+                    <Button android:id="@+id/btn_num_0" style="@style/TVTronKeypadKey"
+                        android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="0" />
+                    <Button android:id="@+id/btn_ok" style="@style/TVTronKeypadKey"
+                        android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="OK" android:textSize="18sp" />
+                </LinearLayout>
+
+                <!-- Vertical CH/VOL paddles + center MUTE/LAST column -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="6dp">
+                    <Button android:id="@+id/btn_ch_plus" style="@style/TVTronKeypadKey"
+                        android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="CH+" android:textSize="14sp" />
+                    <Button android:id="@+id/btn_mute" style="@style/TVTronKeypadKey"
+                        android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="MUTE" android:textSize="12sp" />
+                    <Button android:id="@+id/btn_panel_vol_plus" style="@style/TVTronKeypadKey"
+                        android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="VOL+" android:textSize="14sp" />
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="6dp">
+                    <Button android:id="@+id/btn_ch_minus" style="@style/TVTronKeypadKey"
+                        android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="CH-" android:textSize="14sp" />
+                    <Button android:id="@+id/btn_last" style="@style/TVTronKeypadKey"
+                        android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="LAST" android:textSize="12sp" />
+                    <Button android:id="@+id/btn_panel_vol_minus" style="@style/TVTronKeypadKey"
+                        android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="VOL-" android:textSize="14sp" />
+                </LinearLayout>
+            </LinearLayout>
+    </LinearLayout>
+</FrameLayout>

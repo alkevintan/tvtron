@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#0E1B2C</color>
+    <color name="colorPrimaryDark">#070E18</color>
+    <color name="colorAccent">#22D3EE</color>
+    <color name="colorOnPrimary">#FFFFFF</color>
+    <color name="colorSurface">#FFFFFF</color>
+    <color name="colorOnSurface">#212121</color>
+    <color name="colorTextPrimary">#212121</color>
+    <color name="colorTextSecondary">#757575</color>
+    <color name="colorBackground">#FAFAFA</color>
+    <color name="colorScrim">#66000000</color>
+    <color name="ic_launcher_background">#242D3D</color>
+
+    <!-- 90s green segmented OSD bar -->
+    <color name="osd_bg">#CC000000</color>
+    <color name="osd_segment_on">#33FF66</color>
+    <color name="osd_segment_dim">#0F2A14</color>
+    <color name="osd_label">#9BFFB1</color>
+</resources>

@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#0A0F16">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/tv_body"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_margin="8dp"
+        android:padding="10dp"
+        android:background="@drawable/bg_tv_body">
+
+        <FrameLayout
+            android:id="@+id/screen_wrap"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:padding="4dp"
+            android:background="@drawable/bg_tv_screen"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/bezel_controls"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintDimensionRatio="W,16:9">
+
+            <com.google.android.exoplayer2.ui.PlayerView
+                android:id="@+id/player_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:use_controller="false"
+                app:resize_mode="fit"
+                app:surface_type="surface_view" />
+
+            <ProgressBar
+                android:id="@+id/buffer_progress"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_gravity="center"
+                android:visibility="gone"
+                android:indeterminate="true" />
+
+            <TextView
+                android:id="@+id/channel_number"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top|end"
+                android:layout_margin="10dp"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="4dp"
+                android:background="#33FF66"
+                android:textColor="#000000"
+                android:textStyle="bold"
+                android:textSize="22sp"
+                android:fontFamily="monospace"
+                android:minWidth="56dp"
+                android:gravity="center" />
+
+            <LinearLayout
+                android:id="@+id/top_overlay"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:visibility="gone">
+                <TextView android:id="@+id/channel_title" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                <TextView android:id="@+id/epg_now" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                <TextView android:id="@+id/epg_next" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+            </LinearLayout>
+
+            <com.tvtron.player.ui.RetroVolumeBarView
+                android:id="@+id/volume_osd"
+                android:layout_width="240dp"
+                android:layout_height="64dp"
+                android:layout_gravity="center"
+                android:visibility="gone" />
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/tv_brand"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="TVTRON"
+            android:textColor="#1A1D22"
+            android:textSize="10sp"
+            android:textStyle="bold"
+            android:fontFamily="sans-serif-condensed"
+            android:letterSpacing="0.2"
+            android:layout_marginTop="4dp"
+            app:layout_constraintTop_toBottomOf="@id/screen_wrap"
+            app:layout_constraintStart_toStartOf="@id/screen_wrap" />
+
+        <LinearLayout
+            android:id="@+id/bezel_controls"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:padding="6dp"
+            android:layout_marginTop="6dp"
+            android:background="@drawable/bg_tv_speaker"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <ImageButton android:id="@+id/btn_back" android:layout_width="40dp" android:layout_height="40dp"
+                android:layout_marginHorizontal="4dp" android:src="@drawable/ic_arrow_back"
+                android:background="@drawable/bg_tv_button" android:scaleType="centerInside"
+                android:padding="8dp" android:contentDescription="@android:string/cancel" />
+            <ImageButton android:id="@+id/btn_play_pause" android:layout_width="44dp" android:layout_height="40dp"
+                android:layout_marginHorizontal="4dp" android:src="@drawable/ic_pause"
+                android:background="@drawable/bg_tv_button" android:scaleType="centerInside"
+                android:padding="8dp" android:contentDescription="@string/now_playing" />
+            <ImageButton android:id="@+id/btn_ch_minus" android:layout_width="40dp" android:layout_height="40dp"
+                android:layout_marginHorizontal="4dp" android:src="@drawable/ic_channel_down"
+                android:background="@drawable/bg_tv_button" android:scaleType="centerInside"
+                android:padding="8dp" android:contentDescription="CH-" />
+            <ImageButton android:id="@+id/btn_ch_plus" android:layout_width="40dp" android:layout_height="40dp"
+                android:layout_marginHorizontal="4dp" android:src="@drawable/ic_channel_up"
+                android:background="@drawable/bg_tv_button" android:scaleType="centerInside"
+                android:padding="8dp" android:contentDescription="CH+" />
+            <ImageButton android:id="@+id/btn_vol_down" android:layout_width="40dp" android:layout_height="40dp"
+                android:layout_marginHorizontal="4dp" android:src="@drawable/ic_volume_down"
+                android:background="@drawable/bg_tv_button" android:scaleType="centerInside"
+                android:padding="8dp" android:contentDescription="VOL-" />
+            <ImageButton android:id="@+id/btn_vol_up" android:layout_width="40dp" android:layout_height="40dp"
+                android:layout_marginHorizontal="4dp" android:src="@drawable/ic_volume_up"
+                android:background="@drawable/bg_tv_button" android:scaleType="centerInside"
+                android:padding="8dp" android:contentDescription="VOL+" />
+            <ImageButton android:id="@+id/btn_mute" android:layout_width="40dp" android:layout_height="40dp"
+                android:layout_marginHorizontal="4dp" android:src="@drawable/ic_volume_off"
+                android:background="@drawable/bg_tv_button" android:scaleType="centerInside"
+                android:padding="8dp" android:contentDescription="MUTE" />
+            <ImageButton android:id="@+id/btn_aspect" android:layout_width="40dp" android:layout_height="40dp"
+                android:layout_marginHorizontal="4dp" android:src="@drawable/ic_aspect_ratio"
+                android:background="@drawable/bg_tv_button" android:scaleType="centerInside"
+                android:padding="8dp" android:contentDescription="@string/default_aspect" />
+            <ImageButton android:id="@+id/btn_audio" android:layout_width="40dp" android:layout_height="40dp"
+                android:layout_marginHorizontal="4dp" android:src="@drawable/ic_audio_track"
+                android:background="@drawable/bg_tv_button" android:scaleType="centerInside"
+                android:padding="8dp" android:contentDescription="@string/audio_track" />
+            <ImageButton android:id="@+id/btn_subs" android:layout_width="40dp" android:layout_height="40dp"
+                android:layout_marginHorizontal="4dp" android:src="@drawable/ic_subtitles"
+                android:background="@drawable/bg_tv_button" android:scaleType="centerInside"
+                android:padding="8dp" android:contentDescription="@string/subtitle_track" />
+            <ImageButton android:id="@+id/btn_fav" android:layout_width="40dp" android:layout_height="40dp"
+                android:layout_marginHorizontal="4dp" android:src="@drawable/ic_favorite_off"
+                android:background="@drawable/bg_tv_button" android:scaleType="centerInside"
+                android:padding="8dp" android:contentDescription="@string/favorites" />
+            <ImageButton android:id="@+id/btn_power" android:layout_width="40dp" android:layout_height="40dp"
+                android:layout_marginHorizontal="4dp" android:src="@drawable/ic_power"
+                android:background="@drawable/bg_tv_button" android:scaleType="centerInside"
+                android:padding="8dp" android:contentDescription="ON/OFF" />
+        </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</FrameLayout>

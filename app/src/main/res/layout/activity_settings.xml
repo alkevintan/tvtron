@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/colorPrimary">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/settingsToolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:titleTextColor="?attr/colorOnPrimary"
+            app:navigationIconTint="?attr/colorOnPrimary" />
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- Player -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="2dp"
+                android:layout_marginBottom="16dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        style="@style/SettingsSectionHeader"
+                        android:text="Player" />
+
+                    <LinearLayout style="@style/SettingsSwitchRow">
+                        <LinearLayout style="@style/SettingsLabelColumn">
+                            <TextView style="@style/SettingsTitle" android:text="@string/trinitron_skin" />
+                            <TextView style="@style/SettingsSummary" android:text="@string/trinitron_skin_summary" />
+                        </LinearLayout>
+                        <com.google.android.material.switchmaterial.SwitchMaterial
+                            android:id="@+id/trinitronSwitch"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/aspectRow"
+                        style="@style/SettingsClickableRow">
+                        <LinearLayout style="@style/SettingsLabelColumn">
+                            <TextView style="@style/SettingsTitle" android:text="@string/default_aspect" />
+                            <TextView android:id="@+id/aspectLabel" style="@style/SettingsSummary" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Appearance -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="2dp"
+                android:layout_marginBottom="16dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        style="@style/SettingsSectionHeader"
+                        android:text="Appearance" />
+
+                    <LinearLayout
+                        android:id="@+id/themeRow"
+                        style="@style/SettingsClickableRow">
+                        <LinearLayout style="@style/SettingsLabelColumn">
+                            <TextView style="@style/SettingsTitle" android:text="@string/theme" />
+                            <TextView android:id="@+id/themeLabel" style="@style/SettingsSummary" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- EPG retention -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="2dp"
+                android:layout_marginBottom="16dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        style="@style/SettingsSectionHeader"
+                        android:text="@string/epg_retention" />
+
+                    <LinearLayout
+                        android:id="@+id/epgBackRow"
+                        style="@style/SettingsClickableRow">
+                        <LinearLayout style="@style/SettingsLabelColumn">
+                            <TextView style="@style/SettingsTitle" android:text="Days back" />
+                            <TextView android:id="@+id/epgBackLabel" style="@style/SettingsSummary" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/epgFwdRow"
+                        style="@style/SettingsClickableRow">
+                        <LinearLayout style="@style/SettingsLabelColumn">
+                            <TextView style="@style/SettingsTitle" android:text="Days forward" />
+                            <TextView android:id="@+id/epgFwdLabel" style="@style/SettingsSummary" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Updates -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="2dp"
+                android:layout_marginBottom="16dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        style="@style/SettingsSectionHeader"
+                        android:text="Updates" />
+
+                    <LinearLayout style="@style/SettingsSwitchRow">
+                        <LinearLayout style="@style/SettingsLabelColumn">
+                            <TextView style="@style/SettingsTitle" android:text="@string/auto_check_updates" />
+                            <TextView style="@style/SettingsSummary" android:text="@string/auto_check_updates_summary" />
+                        </LinearLayout>
+                        <com.google.android.material.switchmaterial.SwitchMaterial
+                            android:id="@+id/autoUpdateSwitch"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/checkUpdateRow"
+                        style="@style/SettingsClickableRow">
+                        <LinearLayout style="@style/SettingsLabelColumn">
+                            <TextView style="@style/SettingsTitle" android:text="@string/check_for_updates" />
+                            <TextView android:id="@+id/lastCheckLabel" style="@style/SettingsSummary" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- About -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="2dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        style="@style/SettingsSectionHeader"
+                        android:text="About" />
+
+                    <LinearLayout style="@style/SettingsClickableRow">
+                        <LinearLayout style="@style/SettingsLabelColumn">
+                            <TextView style="@style/SettingsTitle" android:text="@string/app_name" />
+                            <TextView android:id="@+id/versionLabel" style="@style/SettingsSummary" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

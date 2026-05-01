@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/black">
+
+    <com.google.android.exoplayer2.ui.PlayerView
+        android:id="@+id/player_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:use_controller="false"
+        app:resize_mode="fit"
+        app:surface_type="surface_view" />
+
+    <ProgressBar
+        android:id="@+id/buffer_progress"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_gravity="center"
+        android:visibility="gone"
+        android:indeterminate="true" />
+
+    <!-- Top overlay: back + channel name + EPG -->
+    <LinearLayout
+        android:id="@+id/top_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="12dp"
+        android:gravity="center_vertical"
+        android:background="#80000000">
+
+        <ImageButton
+            android:id="@+id/btn_back"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:src="@drawable/ic_arrow_back"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@android:string/cancel" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/channel_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="#FFFFFF"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:singleLine="true"
+                android:ellipsize="end" />
+
+            <TextView
+                android:id="@+id/epg_now"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:singleLine="true"
+                android:ellipsize="end" />
+
+            <TextView
+                android:id="@+id/epg_next"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="#CCCCCC"
+                android:textSize="12sp"
+                android:singleLine="true"
+                android:ellipsize="end" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/channel_number"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="4dp"
+            android:background="#33FF66"
+            android:textColor="#000000"
+            android:textStyle="bold"
+            android:textSize="22sp"
+            android:fontFamily="monospace"
+            android:minWidth="56dp"
+            android:gravity="center" />
+    </LinearLayout>
+
+    <!-- Bottom controls -->
+    <LinearLayout
+        android:id="@+id/bottom_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="12dp"
+        android:background="#80000000">
+
+        <ImageButton
+            android:id="@+id/btn_prev"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:src="@drawable/ic_skip_prev"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/next_program" />
+
+        <ImageButton
+            android:id="@+id/btn_play_pause"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:layout_marginHorizontal="8dp"
+            android:src="@drawable/ic_pause"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/now_playing" />
+
+        <ImageButton
+            android:id="@+id/btn_next"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:src="@drawable/ic_skip_next"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/next_program" />
+
+        <View
+            android:layout_width="16dp"
+            android:layout_height="1dp" />
+
+        <ImageButton
+            android:id="@+id/btn_vol_down"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:src="@drawable/ic_volume_down"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="VOL-" />
+
+        <ImageButton
+            android:id="@+id/btn_vol_up"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:src="@drawable/ic_volume_up"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="VOL+" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" />
+
+        <Button
+            android:id="@+id/btn_aspect"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/aspect_fit"
+            android:textColor="#FFFFFF" />
+
+        <Button
+            android:id="@+id/btn_audio"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/audio_track"
+            android:textColor="#FFFFFF" />
+
+        <Button
+            android:id="@+id/btn_subs"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/subtitle_track"
+            android:textColor="#FFFFFF" />
+
+        <ImageButton
+            android:id="@+id/btn_fav"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:src="@drawable/ic_favorite_off"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/favorites" />
+    </LinearLayout>
+
+    <!-- Retro green segmented OSD volume bar -->
+    <com.tvtron.player.ui.RetroVolumeBarView
+        android:id="@+id/volume_osd"
+        android:layout_width="320dp"
+        android:layout_height="80dp"
+        android:layout_gravity="center"
+        android:visibility="gone" />
+
+</FrameLayout>
