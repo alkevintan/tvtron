@@ -117,6 +117,17 @@ class SettingsActivity : AppCompatActivity() {
                 updateEpgLabels()
             }
         }
+        findViewById<View>(R.id.epgRefreshRow).setOnClickListener { refreshAllEpgNow() }
+    }
+
+    private fun refreshAllEpgNow() {
+        Toast.makeText(this, R.string.refresh_epg_now, Toast.LENGTH_SHORT).show()
+        lifecycleScope.launch {
+            withContext(Dispatchers.IO) {
+                runCatching { com.tvtron.player.util.PlaylistRepository.refreshAllEpg(this@SettingsActivity) }
+            }
+            Toast.makeText(this@SettingsActivity, "EPG refresh complete", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun updateEpgLabels() {

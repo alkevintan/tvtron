@@ -15,7 +15,8 @@ import com.tvtron.player.data.Channel
 class ChannelAdapter(
     private val onClick: (Channel) -> Unit,
     private val onMenu: (Channel) -> Unit,
-    private val onFavorite: (Channel) -> Unit
+    private val onFavorite: (Channel) -> Unit,
+    private val onShareQr: (Channel) -> Unit
 ) : ListAdapter<ChannelAdapter.Item, ChannelAdapter.VH>(DIFF) {
 
     data class Item(
@@ -33,6 +34,7 @@ class ChannelAdapter(
         val now: TextView = v.findViewById(R.id.channel_now)
         val next: TextView = v.findViewById(R.id.channel_next)
         val fav: ImageView = v.findViewById(R.id.channel_fav)
+        val qr: ImageView = v.findViewById(R.id.channel_qr)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
@@ -44,10 +46,11 @@ class ChannelAdapter(
         val item = getItem(pos)
         h.no.text = "%03d".format(pos + 1)
         h.name.text = item.channel.name
-        h.group.text = item.channel.groupTitle
-        h.group.visibility = if (item.channel.groupTitle.isBlank()) View.GONE else View.VISIBLE
-        h.now.text = item.nowTitle?.let { t -> "Now: $t" } ?: ""
-        h.now.visibility = if (item.nowTitle.isNullOrBlank()) View.GONE else View.VISIBLE
+        // Subtitle priority: current EPG show > channel group. Hide if neither.
+        val subtitle = item.nowTitle?.takeIf { it.isNotBlank() } ?: item.channel.groupTitle
+        h.group.text = subtitle
+        h.group.visibility = if (subtitle.isBlank()) View.GONE else View.VISIBLE
+        h.now.visibility = View.GONE
         h.next.text = item.nextTitle?.let { t -> "Next: $t" } ?: ""
         h.next.visibility = if (item.nextTitle.isNullOrBlank()) View.GONE else View.VISIBLE
         h.fav.setImageResource(if (item.isFavorite) R.drawable.ic_favorite else R.drawable.ic_favorite_off)
@@ -60,6 +63,7 @@ class ChannelAdapter(
         h.itemView.setOnClickListener { onClick(item.channel) }
         h.itemView.setOnLongClickListener { onMenu(item.channel); true }
         h.fav.setOnClickListener { onFavorite(item.channel) }
+        h.qr.setOnClickListener { onShareQr(item.channel) }
     }
 
     companion object {

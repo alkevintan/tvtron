@@ -13,11 +13,16 @@
         app:titleTextColor="?attr/colorOnPrimary"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <Spinner
-        android:id="@+id/playlist_spinner"
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/playlist_tabs"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="8dp"
+        android:background="?attr/colorPrimary"
+        app:tabMode="scrollable"
+        app:tabGravity="start"
+        app:tabIndicatorColor="?attr/colorAccent"
+        app:tabTextColor="#B0FFFFFF"
+        app:tabSelectedTextColor="?attr/colorOnPrimary"
         app:layout_constraintTop_toBottomOf="@id/toolbar" />
 
     <HorizontalScrollView
@@ -25,7 +30,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:scrollbars="none"
-        app:layout_constraintTop_toBottomOf="@id/playlist_spinner">
+        app:layout_constraintTop_toBottomOf="@id/playlist_tabs">
         <com.google.android.material.chip.ChipGroup
             android:id="@+id/category_chips"
             android:layout_width="wrap_content"

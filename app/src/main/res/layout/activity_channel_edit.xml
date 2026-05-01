@@ -127,11 +127,26 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
+                android:gravity="end"
                 android:layout_marginTop="16dp">
+                <Button
+                    android:id="@+id/btn_delete_channel"
+                    style="?android:attr/buttonBarButtonStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Delete"
+                    android:textColor="#D32F2F"
+                    android:visibility="gone" />
                 <View
                     android:layout_width="0dp"
                     android:layout_height="1dp"
                     android:layout_weight="1" />
+                <Button
+                    android:id="@+id/btn_cancel_channel"
+                    style="?android:attr/buttonBarButtonStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@android:string/cancel" />
                 <Button
                     android:id="@+id/btn_save_channel"
                     android:layout_width="wrap_content"

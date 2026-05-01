@@ -41,6 +41,7 @@ class ShareChannelQrDialog : BottomSheetDialogFragment() {
         val a = requireArguments()
         val name = a.getString("name").orEmpty()
         val stream = a.getString("stream").orEmpty()
+        view.findViewById<TextView>(R.id.qrHeader).text = "Share Channel"
         view.findViewById<TextView>(R.id.qrPlaylistName).text = name
         view.findViewById<TextView>(R.id.qrSourceUrl).text = stream
 

@@ -143,6 +143,16 @@
                             <TextView android:id="@+id/epgFwdLabel" style="@style/SettingsSummary" />
                         </LinearLayout>
                     </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/epgRefreshRow"
+                        style="@style/SettingsClickableRow">
+                        <LinearLayout style="@style/SettingsLabelColumn">
+                            <TextView style="@style/SettingsTitle" android:text="@string/refresh_epg_now" />
+                            <TextView android:id="@+id/epgRefreshSummary" style="@style/SettingsSummary"
+                                android:text="@string/refresh_epg_now_summary" />
+                        </LinearLayout>
+                    </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 

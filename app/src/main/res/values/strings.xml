@@ -13,8 +13,15 @@
     <string name="show_channel_number">Show channel number on stream</string>
     <string name="show_channel_number_summary">Display the channel number badge as an OSD overlay</string>
     <string name="all_playlists">All playlists</string>
+    <string name="no_playlists_short">No playlists</string>
     <string name="add_channel">Add channel</string>
     <string name="edit_channel">Edit channel</string>
+    <string name="update">Update</string>
+    <string name="refresh_epg_now">Refresh EPG now</string>
+    <string name="refresh_epg_now_summary">Re-pull XMLTV for every playlist</string>
+    <string name="about_tagline">A sideload-only Android IPTV player.</string>
+    <string name="about_features">• HLS / DASH / SmoothStreaming / RTSP / progressive playback via ExoPlayer\n• Multi-playlist M3U + XMLTV EPG with periodic refresh (WorkManager)\n• Channel categories, search (name + EPG titles), favorites, channel numbers\n• Combined \"All playlists\" view, per-playlist tabs\n• Full-screen player with channel zap, aspect cycle, audio + subtitle tracks, retro green volume OSD\n• Optional Trinitron CRT skin (portrait remote with number keypad / landscape bezel controls)\n• Share + scan QR for playlists and individual channels (tvtron:// deep link)\n• Manual add / edit / delete of individual channels\n• OTA updates via GitHub Releases</string>
+    <string name="about_built_with">Built with ExoPlayer, Room, OkHttp, WorkManager, and Material Design.</string>
     <string name="add_channel_no_playlist">Add a playlist first</string>
     <string name="playlist_target">Playlist</string>
     <string name="channel_name">Name</string>

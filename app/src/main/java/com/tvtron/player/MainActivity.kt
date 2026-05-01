@@ -5,9 +5,8 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.widget.ArrayAdapter
-import android.widget.Spinner
 import android.widget.TextView
+import com.google.android.material.tabs.TabLayout
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -49,8 +48,10 @@ class MainActivity : AppCompatActivity() {
 
     private val vm: MainViewModel by viewModels()
     private lateinit var adapter: ChannelAdapter
-    private lateinit var spinner: Spinner
+    private lateinit var tabs: TabLayout
     private lateinit var chips: ChipGroup
+    private var tabEntries: List<Long> = emptyList()
+    private var suppressTabCallback = false
     private lateinit var swipe: SwipeRefreshLayout
     private lateinit var empty: TextView
     private var favoritesMenuItem: MenuItem? = null
@@ -69,7 +70,7 @@ class MainActivity : AppCompatActivity() {
         supportActionBar?.title = getString(R.string.app_name)
         if (savedInstanceState != null) initialRouteHandled = true
 
-        spinner = findViewById(R.id.playlist_spinner)
+        tabs = findViewById(R.id.playlist_tabs)
         chips = findViewById(R.id.category_chips)
         swipe = findViewById(R.id.swipe)
         empty = findViewById(R.id.empty_view)
@@ -77,8 +78,9 @@ class MainActivity : AppCompatActivity() {
         list.layoutManager = LinearLayoutManager(this)
         adapter = ChannelAdapter(
             onClick = { ch -> openPlayer(ch) },
-            onMenu = { ch -> showChannelMenu(ch) },
-            onFavorite = { ch -> vm.toggleFavorite(ch) }
+            onMenu = { ch -> openChannelEditor(ch) },
+            onFavorite = { ch -> vm.toggleFavorite(ch) },
+            onShareQr = { ch -> ShareChannelQrDialog.newInstance(ch).show(supportFragmentManager, "share_ch_qr") }
         )
         list.adapter = adapter
 
@@ -171,37 +173,44 @@ class MainActivity : AppCompatActivity() {
 
     private fun observePlaylists() {
         lifecycleScope.launch {
-            vm.playlists.collect { list ->
-                renderSpinner(list)
-            }
+            vm.playlists.collect { list -> renderTabs(list) }
+        }
+        lifecycleScope.launch {
+            vm.currentPlaylistId.collect { id -> selectTabFor(id) }
         }
     }
 
-    private fun renderSpinner(list: List<Playlist>) {
-        if (list.isEmpty()) {
-            spinner.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, listOf("No playlists — add one")).apply {
-                setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-            }
-            return
-        }
-        // Prepend a virtual "All playlists" entry that maps to ALL_PLAYLISTS_ID.
-        data class Entry(val id: Long, val label: String)
-        val entries = listOf(Entry(MainViewModel.ALL_PLAYLISTS_ID, getString(R.string.all_playlists))) +
-            list.map { Entry(it.id, it.name) }
-        spinner.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, entries.map { it.label }).apply {
-            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        }
-        val curId = vm.currentPlaylistId.value
-        val idx = entries.indexOfFirst { it.id == curId }.takeIf { it >= 0 } ?: 1 // default to first real playlist
-        spinner.setSelection(idx, false)
-        spinner.onItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(p: android.widget.AdapterView<*>?, v: View?, pos: Int, id: Long) {
-                entries.getOrNull(pos)?.let {
-                    if (it.id != vm.currentPlaylistId.value) vm.setCurrentPlaylist(it.id)
+    private fun renderTabs(list: List<Playlist>) {
+        suppressTabCallback = true
+        tabs.removeAllTabs()
+        tabs.clearOnTabSelectedListeners()
+        tabEntries = if (list.isEmpty()) emptyList()
+                     else listOf(MainViewModel.ALL_PLAYLISTS_ID) + list.map { it.id }
+        val labels = if (list.isEmpty()) listOf(getString(R.string.no_playlists_short))
+                     else listOf(getString(R.string.all_playlists)) + list.map { it.name }
+        labels.forEach { tabs.addTab(tabs.newTab().setText(it)) }
+        selectTabFor(vm.currentPlaylistId.value)
+        suppressTabCallback = false
+        if (list.isNotEmpty()) {
+            tabs.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+                override fun onTabSelected(tab: TabLayout.Tab) {
+                    if (suppressTabCallback) return
+                    val id = tabEntries.getOrNull(tab.position) ?: return
+                    if (id != vm.currentPlaylistId.value) vm.setCurrentPlaylist(id)
                 }
-            }
-            override fun onNothingSelected(p: android.widget.AdapterView<*>?) {}
+                override fun onTabUnselected(tab: TabLayout.Tab) {}
+                override fun onTabReselected(tab: TabLayout.Tab) {}
+            })
         }
+    }
+
+    private fun selectTabFor(id: Long) {
+        if (tabEntries.isEmpty()) return
+        val pos = tabEntries.indexOfFirst { it == id }.takeIf { it >= 0 } ?: 1.coerceAtMost(tabEntries.size - 1)
+        if (tabs.selectedTabPosition == pos) return
+        suppressTabCallback = true
+        tabs.getTabAt(pos)?.select()
+        suppressTabCallback = false
     }
 
     private fun observeCategories() {
@@ -273,21 +282,11 @@ class MainActivity : AppCompatActivity() {
         startActivity(Intent(this, PlayerActivity::class.java).putExtra(PlayerActivity.EXTRA_CHANNEL_ID, c.id))
     }
 
-    private fun showChannelMenu(ch: Channel) {
-        val items = arrayOf("Edit", "Delete", "Share QR")
-        AlertDialog.Builder(this)
-            .setTitle(ch.name)
-            .setItems(items) { _, which ->
-                when (which) {
-                    0 -> startActivity(
-                        Intent(this, ChannelEditActivity::class.java)
-                            .putExtra(ChannelEditActivity.EXTRA_CHANNEL_ID, ch.id)
-                    )
-                    1 -> confirmDeleteChannel(ch)
-                    2 -> ShareChannelQrDialog.newInstance(ch).show(supportFragmentManager, "share_ch_qr")
-                }
-            }
-            .show()
+    private fun openChannelEditor(ch: Channel) {
+        startActivity(
+            Intent(this, ChannelEditActivity::class.java)
+                .putExtra(ChannelEditActivity.EXTRA_CHANNEL_ID, ch.id)
+        )
     }
 
     private fun startScan() {
@@ -323,21 +322,6 @@ class MainActivity : AppCompatActivity() {
             )
             null -> android.widget.Toast.makeText(this, R.string.scan_qr_invalid, android.widget.Toast.LENGTH_SHORT).show()
         }
-    }
-
-    private fun confirmDeleteChannel(ch: Channel) {
-        AlertDialog.Builder(this)
-            .setTitle(ch.name)
-            .setMessage("Delete this channel?")
-            .setPositiveButton(android.R.string.ok) { _, _ ->
-                lifecycleScope.launch {
-                    withContext(Dispatchers.IO) {
-                        AppDatabase.getInstance(this@MainActivity).channelDao().deleteById(ch.id)
-                    }
-                }
-            }
-            .setNegativeButton(android.R.string.cancel, null)
-            .show()
     }
 
     private fun openAddChannel() {
@@ -387,45 +371,11 @@ class MainActivity : AppCompatActivity() {
             R.id.action_scan_qr -> { startScan(); true }
             R.id.action_playlists -> { startActivity(Intent(this, PlaylistManagerActivity::class.java)); true }
             R.id.action_settings -> { startActivity(Intent(this, SettingsActivity::class.java)); true }
-            R.id.action_check_update -> { manualCheckUpdate(); true }
-            R.id.action_about -> { showAbout(); true }
+            R.id.action_about -> {
+                com.tvtron.player.ui.AboutDialog().show(supportFragmentManager, "about")
+                true
+            }
             else -> super.onOptionsItemSelected(item)
         }
-    }
-
-    private fun manualCheckUpdate() {
-        android.widget.Toast.makeText(this, "Checking…", android.widget.Toast.LENGTH_SHORT).show()
-        lifecycleScope.launch {
-            val release = withContext(Dispatchers.IO) {
-                runCatching { UpdateChecker.fetchLatest(this@MainActivity) }.getOrNull()
-            }
-            SettingsManager.setLastUpdateCheck(this@MainActivity, System.currentTimeMillis())
-            if (release == null) {
-                android.widget.Toast.makeText(this@MainActivity, "No release found", android.widget.Toast.LENGTH_SHORT).show()
-                return@launch
-            }
-            val current = packageManager.getPackageInfo(packageName, android.content.pm.PackageManager.GET_META_DATA).versionName ?: "0.0.0"
-            if (!UpdateChecker.isNewer(release, current)) {
-                android.widget.Toast.makeText(this@MainActivity, "Up to date ($current)", android.widget.Toast.LENGTH_SHORT).show()
-            } else {
-                UpdateDialog.show(this@MainActivity, release)
-            }
-        }
-    }
-
-    private fun showAbout() {
-        val v = packageManager.getPackageInfo(packageName, android.content.pm.PackageManager.GET_META_DATA).versionName ?: "0.0.0"
-        val owner = getString(R.string.update_github_owner)
-        val repo = getString(R.string.update_github_repo)
-        val msg = buildString {
-            append("TVTron ").append(v).append("\n\n")
-            append("Sideload-only Android IPTV player.\n\n")
-            if (owner.isNotBlank() && repo.isNotBlank()) append("https://github.com/$owner/$repo")
-        }
-        AlertDialog.Builder(this)
-            .setTitle(R.string.app_name)
-            .setMessage(msg)
-            .setPositiveButton(android.R.string.ok, null)
-            .show()
     }
 }

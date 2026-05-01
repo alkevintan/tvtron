@@ -62,8 +62,27 @@ class ChannelEditActivity : AppCompatActivity() {
         referer = findViewById(R.id.edit_channel_referer)
 
         findViewById<Button>(R.id.btn_save_channel).setOnClickListener { save() }
+        findViewById<Button>(R.id.btn_cancel_channel).setOnClickListener { finish() }
+        findViewById<Button>(R.id.btn_delete_channel).setOnClickListener { confirmDelete() }
 
         loadPlaylists()
+    }
+
+    private fun confirmDelete() {
+        val ch = existing ?: return
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle(ch.name)
+            .setMessage("Delete this channel?")
+            .setPositiveButton(android.R.string.ok) { _, _ ->
+                lifecycleScope.launch {
+                    withContext(Dispatchers.IO) {
+                        AppDatabase.getInstance(this@ChannelEditActivity).channelDao().deleteById(ch.id)
+                    }
+                    finish()
+                }
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
     }
 
     private fun loadPlaylists() {
@@ -89,6 +108,8 @@ class ChannelEditActivity : AppCompatActivity() {
                 if (ch == null) { finish(); return@launch }
                 existing = ch
                 supportActionBar?.title = getString(R.string.edit_channel)
+                findViewById<Button>(R.id.btn_delete_channel).visibility = android.view.View.VISIBLE
+                findViewById<Button>(R.id.btn_save_channel).setText(R.string.update)
                 name.setText(ch.name)
                 stream.setText(ch.streamUrl)
                 logo.setText(ch.logo)

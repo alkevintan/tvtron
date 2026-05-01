@@ -39,7 +39,10 @@ object M3uParser {
             return ParsedPlaylist("", emptyList())
         }
 
-        val urlTvg = parseAttrs(lines[0])["url-tvg"].orEmpty()
+        // Different M3U authors use different attr names for the EPG URL.
+        val headerAttrs = parseAttrs(lines[0])
+        val urlTvg = (headerAttrs["url-tvg"] ?: headerAttrs["tvg-url"] ?: headerAttrs["x-tvg-url"])
+            ?.split(',')?.firstOrNull()?.trim().orEmpty()
         val channels = mutableListOf<ParsedChannel>()
 
         var name = ""
