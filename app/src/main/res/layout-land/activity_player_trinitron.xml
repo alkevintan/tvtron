@@ -23,7 +23,9 @@
             app:layout_constraintBottom_toTopOf="@id/bezel_controls"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintDimensionRatio="W,16:9">
+            app:layout_constraintDimensionRatio="16:9"
+            app:layout_constrainedWidth="true"
+            app:layout_constrainedHeight="true">
 
             <com.google.android.exoplayer2.ui.PlayerView
                 android:id="@+id/player_view"

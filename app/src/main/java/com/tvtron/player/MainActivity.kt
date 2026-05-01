@@ -27,11 +27,15 @@ import com.tvtron.player.ui.PlayerActivity
 import com.tvtron.player.ui.PlaylistEditActivity
 import com.tvtron.player.ui.PlaylistManagerActivity
 import com.tvtron.player.ui.SettingsActivity
+import com.tvtron.player.ui.UpdateDialog
 import com.tvtron.player.util.SettingsManager
+import com.tvtron.player.util.UpdateChecker
 import com.tvtron.player.viewmodel.MainViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MainActivity : AppCompatActivity() {
 
@@ -72,6 +76,23 @@ class MainActivity : AppCompatActivity() {
         observeCategories()
         observeChannels()
         routeOnLaunch()
+        maybeAutoCheckUpdate()
+    }
+
+    /** Polls GitHub Releases on launch, throttled to once per 24h. Off-by-toggle. */
+    private fun maybeAutoCheckUpdate() {
+        if (!SettingsManager.isAutoUpdateCheck(this)) return
+        val now = System.currentTimeMillis()
+        val last = SettingsManager.getLastUpdateCheck(this)
+        if (now - last < 24L * 60 * 60 * 1000) return
+        lifecycleScope.launch {
+            val release = withContext(Dispatchers.IO) {
+                runCatching { UpdateChecker.fetchLatest(this@MainActivity) }.getOrNull()
+            } ?: return@launch
+            SettingsManager.setLastUpdateCheck(this@MainActivity, System.currentTimeMillis())
+            val current = packageManager.getPackageInfo(packageName, android.content.pm.PackageManager.GET_META_DATA).versionName ?: "0.0.0"
+            if (UpdateChecker.isNewer(release, current)) UpdateDialog.show(this@MainActivity, release)
+        }
     }
 
     /**
