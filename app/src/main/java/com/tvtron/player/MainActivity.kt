@@ -80,6 +80,16 @@ class MainActivity : AppCompatActivity() {
         )
         list.adapter = adapter
 
+        // Scroll-to-top FAB: visible when first visible item index > 8.
+        val fabScrollTop = findViewById<com.google.android.material.floatingactionbutton.FloatingActionButton>(R.id.fab_scroll_top)
+        fabScrollTop.setOnClickListener { list.smoothScrollToPosition(0) }
+        list.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(rv: RecyclerView, dx: Int, dy: Int) {
+                val first = (rv.layoutManager as? LinearLayoutManager)?.findFirstVisibleItemPosition() ?: 0
+                if (first > 8) fabScrollTop.show() else fabScrollTop.hide()
+            }
+        })
+
         swipe.setOnRefreshListener {
             vm.refreshCurrent()
             swipe.postDelayed({ swipe.isRefreshing = false }, 1500)
@@ -195,7 +205,9 @@ class MainActivity : AppCompatActivity() {
                     if (id != vm.currentPlaylistId.value) vm.setCurrentPlaylist(id)
                 }
                 override fun onTabUnselected(tab: TabLayout.Tab) {}
-                override fun onTabReselected(tab: TabLayout.Tab) {}
+                override fun onTabReselected(tab: TabLayout.Tab) {
+                    findViewById<RecyclerView>(R.id.channel_list).smoothScrollToPosition(0)
+                }
             })
         }
     }

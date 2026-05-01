@@ -179,29 +179,35 @@
                             android:layout_height="1dp"
                             android:layout_weight="1" />
 
-                        <Button
+                        <ImageButton
                             android:id="@+id/btn_aspect"
-                            style="?android:attr/buttonBarButtonStyle"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/aspect_fit"
-                            android:textColor="#FFFFFF" />
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            android:src="@drawable/ic_aspect_ratio"
+                            android:scaleType="centerInside"
+                            android:padding="6dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:contentDescription="@string/default_aspect" />
 
-                        <Button
+                        <ImageButton
                             android:id="@+id/btn_audio"
-                            style="?android:attr/buttonBarButtonStyle"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/audio_track"
-                            android:textColor="#FFFFFF" />
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            android:src="@drawable/ic_audio_track"
+                            android:scaleType="centerInside"
+                            android:padding="6dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:contentDescription="@string/audio_track" />
 
-                        <Button
+                        <ImageButton
                             android:id="@+id/btn_subs"
-                            style="?android:attr/buttonBarButtonStyle"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/subtitle_track"
-                            android:textColor="#FFFFFF" />
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            android:src="@drawable/ic_subtitles"
+                            android:scaleType="centerInside"
+                            android:padding="6dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:contentDescription="@string/subtitle_track" />
 
                         <ImageButton
                             android:id="@+id/btn_fav"
@@ -253,6 +259,7 @@
 
                 <Button
                     android:id="@+id/btn_power"
+                    android:saveEnabled="false"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="ON/OFF"
@@ -360,6 +367,7 @@
                     <Button android:id="@+id/btn_ch_plus" style="@style/TVTronKeypadKey"
                         android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="CH+" android:textSize="14sp" />
                     <Button android:id="@+id/btn_mute" style="@style/TVTronKeypadKey"
+                        android:saveEnabled="false"
                         android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="MUTE" android:textSize="12sp" />
                     <Button android:id="@+id/btn_panel_vol_plus" style="@style/TVTronKeypadKey"
                         android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="VOL+" android:textSize="14sp" />

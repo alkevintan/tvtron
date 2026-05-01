@@ -152,29 +152,35 @@
             android:layout_height="1dp"
             android:layout_weight="1" />
 
-        <Button
+        <ImageButton
             android:id="@+id/btn_aspect"
-            style="?android:attr/buttonBarButtonStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/aspect_fit"
-            android:textColor="#FFFFFF" />
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_aspect_ratio"
+            android:scaleType="centerInside"
+            android:padding="8dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/default_aspect" />
 
-        <Button
+        <ImageButton
             android:id="@+id/btn_audio"
-            style="?android:attr/buttonBarButtonStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/audio_track"
-            android:textColor="#FFFFFF" />
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_audio_track"
+            android:scaleType="centerInside"
+            android:padding="8dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/audio_track" />
 
-        <Button
+        <ImageButton
             android:id="@+id/btn_subs"
-            style="?android:attr/buttonBarButtonStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/subtitle_track"
-            android:textColor="#FFFFFF" />
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_subtitles"
+            android:scaleType="centerInside"
+            android:padding="8dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/subtitle_track" />
 
         <ImageButton
             android:id="@+id/btn_fav"
