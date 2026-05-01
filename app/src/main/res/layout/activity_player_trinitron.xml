@@ -266,6 +266,17 @@
                     android:paddingVertical="6dp"
                     android:background="@drawable/bg_tv_button" />
 
+                <ImageButton
+                    android:id="@+id/btn_skin_fullscreen"
+                    android:layout_width="34dp"
+                    android:layout_height="34dp"
+                    android:layout_marginStart="6dp"
+                    android:src="@drawable/ic_fullscreen"
+                    android:scaleType="centerInside"
+                    android:padding="6dp"
+                    android:background="@drawable/bg_tv_button"
+                    android:contentDescription="Fullscreen" />
+
                 <View
                     android:id="@+id/speaker_right"
                     android:layout_width="0dp"

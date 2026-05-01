@@ -12,6 +12,8 @@
     <string name="scan_qr_invalid">Not a TVTron playlist QR</string>
     <string name="show_channel_number">Show channel number on stream</string>
     <string name="show_channel_number_summary">Display the channel number badge as an OSD overlay</string>
+    <string name="hide_overlay_in_skin">Hide on-screen overlay in bezel mode</string>
+    <string name="hide_overlay_in_skin_summary">Rely on the bezel buttons; suppress the on-screen player controls</string>
     <string name="all_playlists">All playlists</string>
     <string name="no_playlists_short">No playlists</string>
     <string name="add_channel">Add channel</string>

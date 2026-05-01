@@ -174,7 +174,8 @@ class ChannelEditActivity : AppCompatActivity() {
                         streamUrl = s,
                         userAgent = ua.text?.toString()?.trim().orEmpty(),
                         referer = referer.text?.toString()?.trim().orEmpty(),
-                        sortIndex = nextSort
+                        sortIndex = nextSort,
+                        isUserAdded = true
                     ))
                 } else {
                     val sort = if (base.playlistId == target.id) base.sortIndex

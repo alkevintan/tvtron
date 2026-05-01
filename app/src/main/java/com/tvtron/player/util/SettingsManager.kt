@@ -12,6 +12,7 @@ object SettingsManager {
     private const val KEY_DEFAULT_ASPECT = "default_aspect"
     private const val KEY_TRINITRON_SKIN = "trinitron_skin"
     private const val KEY_SHOW_CHANNEL_NUMBER = "show_channel_number"
+    private const val KEY_HIDE_OVERLAY_IN_SKIN = "hide_overlay_in_skin"
     private const val KEY_EPG_DAYS_BACK = "epg_days_back"
     private const val KEY_EPG_DAYS_FORWARD = "epg_days_forward"
     private const val KEY_AUTO_UPDATE_CHECK = "auto_update_check"
@@ -42,6 +43,9 @@ object SettingsManager {
 
     fun isShowChannelNumber(c: Context): Boolean = prefs(c).getBoolean(KEY_SHOW_CHANNEL_NUMBER, true)
     fun setShowChannelNumber(c: Context, on: Boolean) { prefs(c).edit().putBoolean(KEY_SHOW_CHANNEL_NUMBER, on).apply() }
+
+    fun isHideOverlayInSkin(c: Context): Boolean = prefs(c).getBoolean(KEY_HIDE_OVERLAY_IN_SKIN, false)
+    fun setHideOverlayInSkin(c: Context, on: Boolean) { prefs(c).edit().putBoolean(KEY_HIDE_OVERLAY_IN_SKIN, on).apply() }
 
     fun getDefaultAspect(c: Context): AspectMode = enumOr(prefs(c).getString(KEY_DEFAULT_ASPECT, null), AspectMode.FIT)
     fun setDefaultAspect(c: Context, a: AspectMode) { prefs(c).edit().putString(KEY_DEFAULT_ASPECT, a.name).apply() }

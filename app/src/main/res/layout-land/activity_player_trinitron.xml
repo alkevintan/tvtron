@@ -108,6 +108,10 @@
                 android:layout_marginHorizontal="4dp" android:src="@drawable/ic_arrow_back"
                 android:background="@drawable/bg_tv_button" android:scaleType="centerInside"
                 android:padding="8dp" android:contentDescription="@android:string/cancel" />
+            <ImageButton android:id="@+id/btn_skin_fullscreen" android:layout_width="40dp" android:layout_height="40dp"
+                android:layout_marginHorizontal="4dp" android:src="@drawable/ic_fullscreen"
+                android:background="@drawable/bg_tv_button" android:scaleType="centerInside"
+                android:padding="8dp" android:contentDescription="Fullscreen" />
             <ImageButton android:id="@+id/btn_play_pause" android:layout_width="44dp" android:layout_height="40dp"
                 android:layout_marginHorizontal="4dp" android:src="@drawable/ic_pause"
                 android:background="@drawable/bg_tv_button" android:scaleType="centerInside"

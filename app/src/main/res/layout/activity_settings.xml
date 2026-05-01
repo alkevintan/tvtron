@@ -68,6 +68,17 @@
                             android:layout_height="wrap_content" />
                     </LinearLayout>
 
+                    <LinearLayout style="@style/SettingsSwitchRow">
+                        <LinearLayout style="@style/SettingsLabelColumn">
+                            <TextView style="@style/SettingsTitle" android:text="@string/hide_overlay_in_skin" />
+                            <TextView style="@style/SettingsSummary" android:text="@string/hide_overlay_in_skin_summary" />
+                        </LinearLayout>
+                        <com.google.android.material.switchmaterial.SwitchMaterial
+                            android:id="@+id/hideOverlayInSkinSwitch"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
+                    </LinearLayout>
+
                     <LinearLayout
                         android:id="@+id/aspectRow"
                         style="@style/SettingsClickableRow">

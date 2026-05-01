@@ -44,6 +44,10 @@ interface ChannelDao {
     @Query("DELETE FROM channels WHERE playlistId = :pid")
     suspend fun deleteForPlaylist(pid: Long)
 
+    /** Used by M3U refresh; preserves manually-added channels. */
+    @Query("DELETE FROM channels WHERE playlistId = :pid AND isUserAdded = 0")
+    suspend fun deleteAutoForPlaylist(pid: Long)
+
     @Query("SELECT COALESCE(MAX(sortIndex), -1) FROM channels WHERE playlistId = :pid")
     suspend fun maxSortIndex(pid: Long): Int
 }

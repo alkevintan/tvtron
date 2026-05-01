@@ -38,7 +38,10 @@ import kotlinx.coroutines.launch
 
 class PlayerActivity : AppCompatActivity() {
 
-    companion object { const val EXTRA_CHANNEL_ID = "channel_id" }
+    companion object {
+        const val EXTRA_CHANNEL_ID = "channel_id"
+        private const val STATE_SKIN_OVERRIDE = "skin_override"
+    }
 
     private lateinit var playerView: PlayerView
     private lateinit var bufferProgress: ProgressBar
@@ -68,6 +71,7 @@ class PlayerActivity : AppCompatActivity() {
     private var trinitronSkin: Boolean = false
     private var lastOrientation: Int = 0
     private var previousChannelId: Long = -1L
+    private var skinOverride: Boolean = false  // temp full-screen exit from skin
 
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
@@ -81,7 +85,9 @@ class PlayerActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        trinitronSkin = SettingsManager.isTrinitronSkin(this)
+        skinOverride = savedInstanceState?.getBoolean(STATE_SKIN_OVERRIDE, false) ?: false
+        val skinSetting = SettingsManager.isTrinitronSkin(this)
+        trinitronSkin = skinSetting && !skinOverride
         if (trinitronSkin) {
             // Skin allows rotation; layout-land variant compacts the remote beside the screen.
             requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_USER
@@ -128,6 +134,11 @@ class PlayerActivity : AppCompatActivity() {
             lastOrientation = newConfig.orientation
             recreate()
         }
+    }
+
+    override fun onSaveInstanceState(out: Bundle) {
+        super.onSaveInstanceState(out)
+        out.putBoolean(STATE_SKIN_OVERRIDE, skinOverride)
     }
 
     override fun onDestroy() {
@@ -209,6 +220,17 @@ class PlayerActivity : AppCompatActivity() {
         findViewById<View?>(R.id.btn_ch_minus)?.setOnClickListener { zap(-1) }
         findViewById<View?>(R.id.btn_ch_plus)?.setOnClickListener { zap(+1) }
         findViewById<View?>(R.id.btn_last)?.setOnClickListener { lastChannel() }
+        // Skin fullscreen toggle: present in both skin layouts and (hidden by default) in the
+        // non-skin layout's overlay. We only expose it when the user actually has the skin
+        // setting on, since otherwise the non-skin layout is the natural fullscreen.
+        val skinSetting = SettingsManager.isTrinitronSkin(this)
+        findViewById<View?>(R.id.btn_skin_fullscreen)?.let { btn ->
+            btn.visibility = if (skinSetting) View.VISIBLE else View.GONE
+            btn.setOnClickListener {
+                skinOverride = !skinOverride
+                recreate()
+            }
+        }
         findViewById<View?>(R.id.btn_panel_vol_minus)?.setOnClickListener { adjustVolume(-1) }
         findViewById<View?>(R.id.btn_panel_vol_plus)?.setOnClickListener { adjustVolume(+1) }
         // Trinitron remote keypad (only in skin layouts)
@@ -326,6 +348,13 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     private fun setOverlayVisible(visible: Boolean) {
+        // Suppress overlay entirely when skin's bezel already provides controls
+        // and the user has opted to hide the on-screen overlay.
+        if (trinitronSkin && SettingsManager.isHideOverlayInSkin(this) && visible) {
+            topOverlay?.visibility = View.GONE
+            bottomOverlay?.visibility = View.GONE
+            return
+        }
         val v = if (visible) View.VISIBLE else View.GONE
         topOverlay?.visibility = v
         bottomOverlay?.visibility = v

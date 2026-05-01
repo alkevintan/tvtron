@@ -47,6 +47,10 @@ class SettingsActivity : AppCompatActivity() {
         chNum.isChecked = SettingsManager.isShowChannelNumber(this)
         chNum.setOnCheckedChangeListener { _, on -> SettingsManager.setShowChannelNumber(this, on) }
 
+        val hideOverlay = findViewById<SwitchMaterial>(R.id.hideOverlayInSkinSwitch)
+        hideOverlay.isChecked = SettingsManager.isHideOverlayInSkin(this)
+        hideOverlay.setOnCheckedChangeListener { _, on -> SettingsManager.setHideOverlayInSkin(this, on) }
+
         updateAspectLabel()
         findViewById<View>(R.id.aspectRow).setOnClickListener { showAspectDialog() }
     }

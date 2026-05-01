@@ -27,5 +27,7 @@ data class Channel(
     val streamUrl: String,
     val userAgent: String = "",
     val referer: String = "",
-    val sortIndex: Int = 0
+    val sortIndex: Int = 0,
+    /** Set to true for channels added by the user manually; survives M3U refresh. */
+    val isUserAdded: Boolean = false
 )
