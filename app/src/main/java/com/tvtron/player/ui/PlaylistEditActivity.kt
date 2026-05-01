@@ -22,7 +22,12 @@ import kotlinx.coroutines.withContext
 
 class PlaylistEditActivity : AppCompatActivity() {
 
-    companion object { const val EXTRA_PLAYLIST_ID = "playlist_id" }
+    companion object {
+        const val EXTRA_PLAYLIST_ID = "playlist_id"
+        const val EXTRA_PREFILL_NAME = "prefill_name"
+        const val EXTRA_PREFILL_SOURCE = "prefill_source"
+        const val EXTRA_PREFILL_EPG = "prefill_epg"
+    }
 
     private var existing: Playlist? = null
     private lateinit var name: TextInputEditText
@@ -81,7 +86,26 @@ class PlaylistEditActivity : AppCompatActivity() {
             supportActionBar?.title = getString(R.string.add_playlist)
             group.check(R.id.refresh_launch)
             hours.setText("24")
+            applyDeepLinkOrExtras()
         }
+    }
+
+    /**
+     * Two pre-fill paths:
+     *   - tvtron://playlist?n=..&u=..&e=.. when launched as ACTION_VIEW (deep link)
+     *   - EXTRA_PREFILL_* when launched in-app from a scanned QR
+     */
+    private fun applyDeepLinkOrExtras() {
+        val data = intent.data
+        if (data != null && data.scheme.equals("tvtron", true) && data.host.equals("playlist", true)) {
+            data.getQueryParameter("n")?.takeIf { it.isNotBlank() }?.let { name.setText(it) }
+            data.getQueryParameter("u")?.takeIf { it.isNotBlank() }?.let { source.setText(it) }
+            data.getQueryParameter("e")?.takeIf { it.isNotBlank() }?.let { epg.setText(it) }
+            return
+        }
+        intent.getStringExtra(EXTRA_PREFILL_NAME)?.takeIf { it.isNotBlank() }?.let { name.setText(it) }
+        intent.getStringExtra(EXTRA_PREFILL_SOURCE)?.takeIf { it.isNotBlank() }?.let { source.setText(it) }
+        intent.getStringExtra(EXTRA_PREFILL_EPG)?.takeIf { it.isNotBlank() }?.let { epg.setText(it) }
     }
 
     private fun build(): Playlist? {

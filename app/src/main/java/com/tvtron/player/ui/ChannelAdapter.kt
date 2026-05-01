@@ -14,7 +14,8 @@ import com.tvtron.player.data.Channel
 
 class ChannelAdapter(
     private val onClick: (Channel) -> Unit,
-    private val onLongClick: (Channel) -> Unit
+    private val onMenu: (Channel) -> Unit,
+    private val onFavorite: (Channel) -> Unit
 ) : ListAdapter<ChannelAdapter.Item, ChannelAdapter.VH>(DIFF) {
 
     data class Item(
@@ -57,8 +58,8 @@ class ChannelAdapter(
             h.logo.setImageResource(R.drawable.ic_tv)
         }
         h.itemView.setOnClickListener { onClick(item.channel) }
-        h.itemView.setOnLongClickListener { onLongClick(item.channel); true }
-        h.fav.setOnClickListener { onLongClick(item.channel) }
+        h.itemView.setOnLongClickListener { onMenu(item.channel); true }
+        h.fav.setOnClickListener { onFavorite(item.channel) }
     }
 
     companion object {

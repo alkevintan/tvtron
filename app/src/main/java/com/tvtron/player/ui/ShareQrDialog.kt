@@ -18,15 +18,18 @@ import com.tvtron.player.util.QrCodeGenerator
 /**
  * Bottom-sheet QR code for a Playlist.
  *
- * Encoded payload (text), pipe-delimited:
- *   TVTRON|<name>|<m3u-url>|<epg-url>
+ * Encoded payload is a deep-link URI:
+ *   tvtron://playlist?n=<name>&u=<m3u-url>&e=<epg-url>
+ *
+ * Tapping the QR in any modern scanner that recognises custom schemes will
+ * open PlaylistEditActivity (via the intent-filter in AndroidManifest), which
+ * also accepts the legacy pipe format `TVTRON|name|url|epg` for back-compat.
  *
  * Local file playlists (content://) are not shareable; the dialog shows a hint instead.
  */
 class ShareQrDialog : BottomSheetDialogFragment() {
 
     companion object {
-        private const val SCHEME = "TVTRON"
         fun newInstance(playlist: Playlist): ShareQrDialog = ShareQrDialog().apply {
             arguments = Bundle().apply {
                 putString("name", playlist.name)
@@ -35,6 +38,15 @@ class ShareQrDialog : BottomSheetDialogFragment() {
                 putBoolean("remote", playlist.isRemote)
             }
         }
+
+        fun encode(name: String, source: String, epg: String): String =
+            android.net.Uri.Builder()
+                .scheme("tvtron").authority("playlist")
+                .appendQueryParameter("n", name)
+                .appendQueryParameter("u", source)
+                .apply { if (epg.isNotBlank()) appendQueryParameter("e", epg) }
+                .build()
+                .toString()
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View =
@@ -59,10 +71,7 @@ class ShareQrDialog : BottomSheetDialogFragment() {
 
         view.findViewById<TextView>(R.id.qrSourceUrl).text = source
 
-        val payload = buildString {
-            append(SCHEME).append('|').append(name).append('|').append(source)
-            if (epg.isNotBlank()) append('|').append(epg)
-        }
+        val payload = encode(name, source, epg)
         try {
             view.findViewById<ImageView>(R.id.qrImageView).setImageBitmap(QrCodeGenerator.generateBitmap(payload, 640))
         } catch (_: Exception) {

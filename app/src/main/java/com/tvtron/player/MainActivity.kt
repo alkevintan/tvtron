@@ -67,7 +67,8 @@ class MainActivity : AppCompatActivity() {
         list.layoutManager = LinearLayoutManager(this)
         adapter = ChannelAdapter(
             onClick = { ch -> openPlayer(ch) },
-            onLongClick = { ch -> vm.toggleFavorite(ch) }
+            onMenu = { ch -> showChannelMenu(ch) },
+            onFavorite = { ch -> vm.toggleFavorite(ch) }
         )
         list.adapter = adapter
 
@@ -262,6 +263,45 @@ class MainActivity : AppCompatActivity() {
         startActivity(Intent(this, PlayerActivity::class.java).putExtra(PlayerActivity.EXTRA_CHANNEL_ID, c.id))
     }
 
+    private fun showChannelMenu(ch: Channel) {
+        val items = arrayOf("Edit", "Delete")
+        AlertDialog.Builder(this)
+            .setTitle(ch.name)
+            .setItems(items) { _, which ->
+                when (which) {
+                    0 -> startActivity(
+                        Intent(this, com.tvtron.player.ui.ChannelEditActivity::class.java)
+                            .putExtra(com.tvtron.player.ui.ChannelEditActivity.EXTRA_CHANNEL_ID, ch.id)
+                    )
+                    1 -> confirmDeleteChannel(ch)
+                }
+            }
+            .show()
+    }
+
+    private fun confirmDeleteChannel(ch: Channel) {
+        AlertDialog.Builder(this)
+            .setTitle(ch.name)
+            .setMessage("Delete this channel?")
+            .setPositiveButton(android.R.string.ok) { _, _ ->
+                lifecycleScope.launch {
+                    withContext(Dispatchers.IO) {
+                        AppDatabase.getInstance(this@MainActivity).channelDao().deleteById(ch.id)
+                    }
+                }
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    private fun openAddChannel() {
+        val cur = vm.currentPlaylistId.value.takeIf { it > 0L } ?: -1L
+        startActivity(
+            Intent(this, com.tvtron.player.ui.ChannelEditActivity::class.java)
+                .putExtra(com.tvtron.player.ui.ChannelEditActivity.EXTRA_PRESELECT_PLAYLIST, cur)
+        )
+    }
+
     private fun openLastChannel() {
         val id = SettingsManager.getLastChannelId(this)
         if (id <= 0) {
@@ -297,6 +337,7 @@ class MainActivity : AppCompatActivity() {
                 true
             }
             R.id.action_refresh -> { vm.refreshCurrent(); true }
+            R.id.action_add_channel -> { openAddChannel(); true }
             R.id.action_playlists -> { startActivity(Intent(this, PlaylistManagerActivity::class.java)); true }
             R.id.action_settings -> { startActivity(Intent(this, SettingsActivity::class.java)); true }
             R.id.action_check_update -> { manualCheckUpdate(); true }

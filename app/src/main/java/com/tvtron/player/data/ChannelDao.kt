@@ -32,6 +32,18 @@ interface ChannelDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(channels: List<Channel>): List<Long>
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(channel: Channel): Long
+
+    @androidx.room.Update
+    suspend fun update(channel: Channel)
+
+    @Query("DELETE FROM channels WHERE id = :id")
+    suspend fun deleteById(id: Long)
+
     @Query("DELETE FROM channels WHERE playlistId = :pid")
     suspend fun deleteForPlaylist(pid: Long)
+
+    @Query("SELECT COALESCE(MAX(sortIndex), -1) FROM channels WHERE playlistId = :pid")
+    suspend fun maxSortIndex(pid: Long): Int
 }
