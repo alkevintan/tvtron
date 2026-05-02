@@ -17,8 +17,14 @@ interface FavoriteDao {
     @Query("SELECT EXISTS(SELECT 1 FROM favorites WHERE channelId = :cid)")
     suspend fun isFavorite(cid: Long): Boolean
 
+    @Query("SELECT channelId FROM favorites WHERE playlistId = :pid")
+    suspend fun getChannelIdsForPlaylist(pid: Long): List<Long>
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun add(f: Favorite): Long
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun addAll(fs: List<Favorite>)
 
     @Query("DELETE FROM favorites WHERE channelId = :cid")
     suspend fun remove(cid: Long)

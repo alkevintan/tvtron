@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import android.util.Log
 import com.tvtron.player.data.AppDatabase
+import com.tvtron.player.data.Favorite
 import com.tvtron.player.data.Playlist
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -29,14 +30,42 @@ object PlaylistRepository {
         val parsed = M3uParser.parse(m3uText)
         Log.i(TAG, "refresh(${playlist.id}): parsed ${parsed.channels.size} channels, urlTvg='${parsed.urlTvg}'")
 
+        // Snapshot favorites' identity (streamUrl + tvgId) so we can remap to new
+        // channel rows after the auto-delete cascades old favorite rows away.
+        val favIdsBefore = db.favoriteDao().getChannelIdsForPlaylist(playlist.id).toSet()
+        val favKeysBefore: Set<Pair<String, String>> = if (favIdsBefore.isEmpty()) emptySet()
+        else db.channelDao().getForPlaylist(playlist.id)
+            .filter { it.id in favIdsBefore && !it.isUserAdded }
+            .map { it.streamUrl to it.tvgId }
+            .toSet()
+
         // Re-import only auto-imported channels; user-added entries stay put.
         val newChannels = parsed.channels.mapIndexed { idx, p -> p.toEntity(playlist.id, idx) }
         db.channelDao().deleteAutoForPlaylist(playlist.id)
-        if (newChannels.isNotEmpty()) db.channelDao().insertAll(newChannels)
+        val newIds: List<Long> = if (newChannels.isNotEmpty()) db.channelDao().insertAll(newChannels) else emptyList()
         // Push surviving user-added channels to the end so they sort after the imported ones.
         val userAdded = db.channelDao().getForPlaylist(playlist.id).filter { it.isUserAdded }
         userAdded.forEachIndexed { i, ch ->
             db.channelDao().update(ch.copy(sortIndex = newChannels.size + i))
+        }
+
+        // Remap favorites onto the freshly-inserted rows. Match by streamUrl+tvgId;
+        // fall back to streamUrl alone for entries whose tvgId changed.
+        if (favKeysBefore.isNotEmpty() && newIds.isNotEmpty()) {
+            val byExact = HashMap<Pair<String, String>, Long>(newIds.size)
+            val byUrl = HashMap<String, Long>(newIds.size)
+            newChannels.forEachIndexed { i, ch ->
+                val nid = newIds[i]
+                if (nid > 0L) {
+                    byExact.putIfAbsent(ch.streamUrl to ch.tvgId, nid)
+                    byUrl.putIfAbsent(ch.streamUrl, nid)
+                }
+            }
+            val restored = favKeysBefore.mapNotNull { key ->
+                val nid = byExact[key] ?: byUrl[key.first] ?: return@mapNotNull null
+                Favorite(channelId = nid, playlistId = playlist.id)
+            }
+            if (restored.isNotEmpty()) db.favoriteDao().addAll(restored)
         }
 
         val epgUrl = playlist.epgUrl.ifBlank { parsed.urlTvg }
