@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">TVTron</string>
-    <string name="splash_subtitle">Tune in to the grid</string>
+    <string name="splash_subtitle">with Intelliview on-screen programming!</string>
 
     <string name="playlists">Playlists</string>
     <string name="add_playlist">Add Playlist</string>
