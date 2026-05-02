@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">HBS</string>
+    <string name="splash_title" translatable="false">HIBACHI BIG SCREEN</string>
     <string name="splash_subtitle">with Intelliview on-screen programming!</string>
+    <string name="splash_loading">Loading channels…</string>
 
     <string name="playlists">Playlists</string>
     <string name="add_playlist">Add Playlist</string>
