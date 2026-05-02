@@ -20,7 +20,7 @@ object UpdateInstaller {
         cleanupPrevious(app)
 
         val request = DownloadManager.Request(Uri.parse(release.apkUrl))
-            .setTitle("TVTron ${release.versionName}")
+            .setTitle("${app.getString(com.tvtron.player.R.string.app_name)} ${release.versionName}")
             .setDescription("Downloading update")
             .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
             .setDestinationInExternalFilesDir(app, Environment.DIRECTORY_DOWNLOADS, "updates/$FILENAME")

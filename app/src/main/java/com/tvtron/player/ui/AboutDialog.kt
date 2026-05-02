@@ -32,7 +32,7 @@ class AboutDialog : DialogFragment() {
         versionName = try {
             ctx.packageManager.getPackageInfo(ctx.packageName, 0).versionName ?: "0.0.0"
         } catch (_: Exception) { "0.0.0" }
-        view.findViewById<TextView>(R.id.aboutVersion).text = "TVTron v$versionName"
+        view.findViewById<TextView>(R.id.aboutVersion).text = "${getString(R.string.app_name)} v$versionName"
 
         setupUpdateRow(view)
         setupGithubRow(view)

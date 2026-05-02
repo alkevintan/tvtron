@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">TVTron</string>
+    <string name="app_name">HBS</string>
     <string name="splash_subtitle">with Intelliview on-screen programming!</string>
 
     <string name="playlists">Playlists</string>
@@ -8,8 +8,8 @@
     <string name="edit_playlist">Edit Playlist</string>
     <string name="share_playlist">Share playlist</string>
     <string name="scan_qr">Scan QR</string>
-    <string name="scan_qr_prompt">Point camera at a TVTron playlist QR</string>
-    <string name="scan_qr_invalid">Not a TVTron playlist QR</string>
+    <string name="scan_qr_prompt">Point camera at an HBS playlist QR</string>
+    <string name="scan_qr_invalid">Not an HBS playlist QR</string>
     <string name="show_channel_number">Show channel number on stream</string>
     <string name="show_channel_number_summary">Display the channel number badge as an OSD overlay</string>
     <string name="hide_overlay_in_skin">Hide on-screen overlay in bezel mode</string>

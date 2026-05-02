@@ -310,7 +310,7 @@ class PlaybackService : LifecycleService() {
         val toggleText = if (playing) "Pause" else "Play"
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle(channel?.name ?: "TVTron")
+            .setContentTitle(channel?.name ?: getString(R.string.app_name))
             .setContentText(channel?.groupTitle.orEmpty())
             .setSmallIcon(R.drawable.ic_tv)
             .setContentIntent(openPending)

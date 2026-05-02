@@ -6,9 +6,9 @@ import androidx.lifecycle.viewModelScope
 import com.tvtron.player.data.AppDatabase
 import com.tvtron.player.data.Channel
 import com.tvtron.player.data.Playlist
+import com.tvtron.player.util.LaunchRefresher
 import com.tvtron.player.util.PlaylistRepository
 import com.tvtron.player.util.SettingsManager
-import com.tvtron.player.worker.RefreshScheduler
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -109,17 +109,11 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    private var refreshDoneOnce = false
-    private fun triggerOnLaunchRefresh(list: List<Playlist>) {
-        if (refreshDoneOnce) return
-        refreshDoneOnce = true
-        list.filter { it.autoRefresh == com.tvtron.player.data.AutoRefreshMode.ON_LAUNCH }
-            .forEach { p ->
-                viewModelScope.launch {
-                    runCatching { PlaylistRepository.refresh(getApplication(), p) }
-                }
-            }
-        RefreshScheduler.applyAll(getApplication(), list)
+    private fun triggerOnLaunchRefresh(@Suppress("UNUSED_PARAMETER") list: List<Playlist>) {
+        // Idempotent — splash already kicked this off; this is the safety net for
+        // cases where MainActivity launches without going through SplashActivity
+        // (e.g. tests, deep-link entry points).
+        LaunchRefresher.start(getApplication())
     }
 
     fun setCurrentPlaylist(id: Long) {
