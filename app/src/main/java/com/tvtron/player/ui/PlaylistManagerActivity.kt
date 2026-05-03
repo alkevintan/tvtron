@@ -6,6 +6,8 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
@@ -18,6 +20,7 @@ import com.journeyapps.barcodescanner.ScanOptions
 import com.tvtron.player.R
 import com.tvtron.player.data.AppDatabase
 import com.tvtron.player.data.Playlist
+import com.tvtron.player.util.QrImageDecoder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -30,6 +33,20 @@ class PlaylistManagerActivity : AppCompatActivity() {
     private val scanLauncher = registerForActivityResult(ScanContract()) { result ->
         val contents = result?.contents ?: return@registerForActivityResult
         handleScan(contents)
+    }
+
+    private val pickImageLauncher = registerForActivityResult(
+        ActivityResultContracts.PickVisualMedia()
+    ) { uri ->
+        if (uri == null) return@registerForActivityResult
+        lifecycleScope.launch {
+            val text = withContext(Dispatchers.IO) { QrImageDecoder.decode(this@PlaylistManagerActivity, uri) }
+            if (text == null) {
+                Toast.makeText(this@PlaylistManagerActivity, R.string.qr_image_no_code, Toast.LENGTH_SHORT).show()
+            } else {
+                handleScan(text)
+            }
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -66,8 +83,18 @@ class PlaylistManagerActivity : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
-        R.id.action_scan_qr -> { startScan(); true }
+        R.id.action_scan_qr -> { promptQrSource(); true }
         else -> super.onOptionsItemSelected(item)
+    }
+
+    private fun promptQrSource() {
+        val labels = arrayOf(getString(R.string.qr_source_camera), getString(R.string.qr_source_gallery))
+        AlertDialog.Builder(this)
+            .setTitle(R.string.scan_qr)
+            .setItems(labels) { _, which ->
+                if (which == 0) startScan() else pickImage()
+            }
+            .show()
     }
 
     private fun startScan() {
@@ -77,6 +104,12 @@ class PlaylistManagerActivity : AppCompatActivity() {
             .setBeepEnabled(false)
             .setOrientationLocked(false)
         scanLauncher.launch(opts)
+    }
+
+    private fun pickImage() {
+        pickImageLauncher.launch(
+            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+        )
     }
 
     private fun handleScan(text: String) {

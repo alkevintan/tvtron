@@ -6,6 +6,9 @@ import android.view.MenuItem
 import android.widget.ArrayAdapter
 import android.widget.Spinner
 import android.widget.Toast
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.appbar.MaterialToolbar
@@ -16,6 +19,7 @@ import com.tvtron.player.R
 import com.tvtron.player.data.AppDatabase
 import com.tvtron.player.data.Channel
 import com.tvtron.player.data.Playlist
+import com.tvtron.player.util.QrImageDecoder
 import com.tvtron.player.util.TvtronUri
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -49,10 +53,29 @@ class ChannelEditActivity : AppCompatActivity() {
     private var deleteMenuItem: MenuItem? = null
 
     private val scanLauncher = registerForActivityResult(ScanContract()) { result ->
-        val payload = result?.contents?.let { TvtronUri.parse(it) } as? TvtronUri.Payload.ChannelPayload ?: run {
-            if (result?.contents != null)
-                Toast.makeText(this, R.string.scan_qr_invalid, Toast.LENGTH_SHORT).show()
-            return@registerForActivityResult
+        val text = result?.contents ?: return@registerForActivityResult
+        applyChannelPayload(text)
+    }
+
+    private val pickImageLauncher = registerForActivityResult(
+        ActivityResultContracts.PickVisualMedia()
+    ) { uri ->
+        if (uri == null) return@registerForActivityResult
+        lifecycleScope.launch {
+            val text = withContext(Dispatchers.IO) { QrImageDecoder.decode(this@ChannelEditActivity, uri) }
+            if (text == null) {
+                Toast.makeText(this@ChannelEditActivity, R.string.qr_image_no_code, Toast.LENGTH_SHORT).show()
+            } else {
+                applyChannelPayload(text)
+            }
+        }
+    }
+
+    private fun applyChannelPayload(text: String) {
+        val payload = TvtronUri.parse(text) as? TvtronUri.Payload.ChannelPayload
+        if (payload == null) {
+            Toast.makeText(this, R.string.scan_qr_invalid, Toast.LENGTH_SHORT).show()
+            return
         }
         if (payload.name.isNotBlank()) name.setText(payload.name)
         if (payload.streamUrl.isNotBlank()) stream.setText(payload.streamUrl)
@@ -94,8 +117,18 @@ class ChannelEditActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
         R.id.action_save -> { save(); true }
         R.id.action_delete -> { confirmDelete(); true }
-        R.id.action_scan_qr -> { startScan(); true }
+        R.id.action_scan_qr -> { promptQrSource(); true }
         else -> super.onOptionsItemSelected(item)
+    }
+
+    private fun promptQrSource() {
+        val labels = arrayOf(getString(R.string.qr_source_camera), getString(R.string.qr_source_gallery))
+        AlertDialog.Builder(this)
+            .setTitle(R.string.scan_qr)
+            .setItems(labels) { _, which ->
+                if (which == 0) startScan() else pickImage()
+            }
+            .show()
     }
 
     private fun startScan() {
@@ -105,6 +138,12 @@ class ChannelEditActivity : AppCompatActivity() {
                 .setPrompt(getString(R.string.scan_qr_prompt))
                 .setBeepEnabled(false)
                 .setOrientationLocked(false)
+        )
+    }
+
+    private fun pickImage() {
+        pickImageLauncher.launch(
+            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
         )
     }
 

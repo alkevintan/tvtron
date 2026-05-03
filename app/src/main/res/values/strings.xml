@@ -12,6 +12,9 @@
     <string name="scan_qr">Scan QR</string>
     <string name="scan_qr_prompt">Point camera at an HBS playlist QR</string>
     <string name="scan_qr_invalid">Not an HBS playlist QR</string>
+    <string name="qr_source_camera">Scan with camera</string>
+    <string name="qr_source_gallery">Pick from gallery</string>
+    <string name="qr_image_no_code">No QR code found in image</string>
     <string name="show_channel_number">Show channel number on stream</string>
     <string name="show_channel_number_summary">Display the channel number badge as an OSD overlay</string>
     <string name="hide_overlay_in_skin">Hide on-screen overlay in bezel mode</string>
