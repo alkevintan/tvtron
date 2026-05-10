@@ -16,6 +16,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.WindowInsets
 import android.view.WindowInsetsController
+import android.view.WindowManager
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.PopupMenu
@@ -198,11 +199,13 @@ class PlayerActivity : AppCompatActivity() {
         lifecycleScope.launch {
             s.isBuffering.collect { buf ->
                 bufferProgress.visibility = if (buf) View.VISIBLE else View.GONE
+                updateKeepScreenOn()
             }
         }
         lifecycleScope.launch {
             s.isPlaying.collect { p ->
                 btnPlayPause.setImageResource(if (p) R.drawable.ic_pause else R.drawable.ic_play)
+                updateKeepScreenOn()
             }
         }
     }
@@ -395,6 +398,15 @@ class PlayerActivity : AppCompatActivity() {
             KeyEvent.KEYCODE_DPAD_UP -> { zap(+1); true }
             KeyEvent.KEYCODE_DPAD_DOWN -> { zap(-1); true }
             else -> super.onKeyDown(keyCode, event)
+        }
+    }
+
+    private fun updateKeepScreenOn() {
+        val s = service ?: return
+        if (s.isPlaying.value || s.isBuffering.value) {
+            window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        } else {
+            window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         }
     }
 
