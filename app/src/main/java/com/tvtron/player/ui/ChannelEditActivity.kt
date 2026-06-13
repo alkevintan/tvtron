@@ -88,6 +88,8 @@ class ChannelEditActivity : AppCompatActivity() {
         if (payload.tvgId.isNotBlank()) tvgId.setText(payload.tvgId)
         if (payload.userAgent.isNotBlank()) ua.setText(payload.userAgent)
         if (payload.referer.isNotBlank()) referer.setText(payload.referer)
+        if (payload.drmKeyId.isNotBlank()) drmKeyId.setText(payload.drmKeyId)
+        if (payload.drmKey.isNotBlank()) drmKey.setText(payload.drmKey)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
