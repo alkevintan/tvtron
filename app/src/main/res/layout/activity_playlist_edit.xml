@@ -39,7 +39,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:hint="@string/playlist_source">
+                android:hint="@string/playlist_source"
+                app:helperText="@string/playlist_source_optional_hint"
+                app:helperTextEnabled="true">
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/edit_source"
                     android:layout_width="match_parent"

@@ -22,6 +22,10 @@ object PlaylistRepository {
     private const val TAG = "PlaylistRepository"
 
     suspend fun refresh(context: Context, playlist: Playlist) = withContext(Dispatchers.IO) {
+        if (playlist.source.isBlank()) {
+            Log.i(TAG, "refresh(${playlist.id}): skipping — no M3U source (manual playlist)")
+            return@withContext
+        }
         val db = AppDatabase.getInstance(context)
         val m3uText = readText(context, playlist.source) ?: run {
             Log.w(TAG, "refresh(${playlist.id}): could not read M3U from ${playlist.source}")

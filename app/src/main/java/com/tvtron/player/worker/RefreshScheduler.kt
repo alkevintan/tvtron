@@ -22,6 +22,11 @@ object RefreshScheduler {
     fun apply(context: Context, playlist: Playlist) {
         val wm = WorkManager.getInstance(context)
         val unique = PlaylistRefreshWorker.uniqueName(playlist.id)
+        // Blank playlists with no M3U source have nothing to refresh.
+        if (playlist.source.isBlank()) {
+            wm.cancelUniqueWork(unique)
+            return
+        }
         when (playlist.autoRefresh) {
             AutoRefreshMode.OFF, AutoRefreshMode.ON_LAUNCH -> {
                 wm.cancelUniqueWork(unique)

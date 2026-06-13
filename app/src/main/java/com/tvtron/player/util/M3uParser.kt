@@ -16,7 +16,9 @@ object M3uParser {
         val groupTitle: String,
         val streamUrl: String,
         val userAgent: String,
-        val referer: String
+        val referer: String,
+        val drmKeyId: String = "",
+        val drmKey: String = ""
     ) {
         fun toEntity(playlistId: Long, sortIndex: Int): Channel = Channel(
             playlistId = playlistId,
@@ -27,6 +29,8 @@ object M3uParser {
             streamUrl = streamUrl,
             userAgent = userAgent,
             referer = referer,
+            drmKeyId = drmKeyId,
+            drmKey = drmKey,
             sortIndex = sortIndex
         )
     }
@@ -50,6 +54,8 @@ object M3uParser {
         var groupOverride = ""
         var ua = ""
         var ref = ""
+        var drmKeyId = ""
+        var drmKey = ""
 
         for (line in lines.drop(1)) {
             when {
@@ -58,6 +64,9 @@ object M3uParser {
                     attrs = parseAttrs(line)
                     val commaIdx = line.indexOf(',')
                     name = if (commaIdx >= 0) line.substring(commaIdx + 1).trim() else ""
+                    // Parse ClearKey attributes from EXTINF
+                    drmKeyId = attrs["drm-key-id"].orEmpty()
+                    drmKey = attrs["drm-key"].orEmpty()
                 }
                 line.startsWith("#EXTGRP:") -> groupOverride = line.substringAfter("#EXTGRP:").trim()
                 line.startsWith("#EXTVLCOPT:", ignoreCase = true) -> {
@@ -69,6 +78,8 @@ object M3uParser {
                         when (k) {
                             "http-user-agent" -> ua = vv
                             "http-referrer" -> ref = vv
+                            "drm-key-id" -> drmKeyId = vv
+                            "drm-key" -> drmKey = vv
                         }
                     }
                 }
@@ -81,6 +92,14 @@ object M3uParser {
                         when (k) {
                             "http-user-agent" -> ua = vv
                             "http-referrer" -> ref = vv
+                            // KODI inputstream.adaptive license_key format: KID:KEY (hex)
+                            "inputstream.adaptive.license_key" -> {
+                                val parts = vv.split(':')
+                                if (parts.size >= 2) {
+                                    drmKeyId = parts[0].trim()
+                                    drmKey = parts[1].trim()
+                                }
+                            }
                         }
                     }
                 }
@@ -94,13 +113,17 @@ object M3uParser {
                             groupTitle = groupOverride.ifBlank { attrs["group-title"].orEmpty() },
                             streamUrl = line,
                             userAgent = ua,
-                            referer = ref
+                            referer = ref,
+                            drmKeyId = drmKeyId,
+                            drmKey = drmKey
                         )
                         name = ""
                         attrs = emptyMap()
                         groupOverride = ""
                         ua = ""
                         ref = ""
+                        drmKeyId = ""
+                        drmKey = ""
                     }
                 }
             }

@@ -35,7 +35,7 @@ class PlaylistAdapter(
     override fun onBindViewHolder(h: VH, pos: Int) {
         val p = getItem(pos)
         h.name.text = p.name
-        h.source.text = p.source
+        h.source.text = if (p.source.isBlank()) "Manual playlist (no M3U source)" else p.source
         val refreshTxt = if (p.lastRefresh > 0)
             DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(Date(p.lastRefresh))
         else "never"

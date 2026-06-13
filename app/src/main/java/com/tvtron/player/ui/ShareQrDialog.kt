@@ -62,8 +62,10 @@ class ShareQrDialog : BottomSheetDialogFragment() {
 
         view.findViewById<TextView>(R.id.qrPlaylistName).text = name
 
-        if (!remote) {
-            view.findViewById<TextView>(R.id.qrSourceUrl).text = "Local playlists can't be shared via QR"
+        if (!remote || source.isBlank()) {
+            view.findViewById<TextView>(R.id.qrSourceUrl).text =
+                if (source.isBlank()) "Blank playlists can't be shared via QR"
+                else "Local playlists can't be shared via QR"
             view.findViewById<ImageView>(R.id.qrImageView).setImageDrawable(null)
             view.findViewById<View>(R.id.qrCopyButton).visibility = View.GONE
             return

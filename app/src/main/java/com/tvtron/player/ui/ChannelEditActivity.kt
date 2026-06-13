@@ -37,6 +37,8 @@ class ChannelEditActivity : AppCompatActivity() {
         const val EXTRA_PREFILL_TVG = "prefill_tvg"
         const val EXTRA_PREFILL_UA = "prefill_ua"
         const val EXTRA_PREFILL_REFERER = "prefill_referer"
+        const val EXTRA_PREFILL_DRM_KEY_ID = "prefill_drm_key_id"
+        const val EXTRA_PREFILL_DRM_KEY = "prefill_drm_key"
     }
 
     private var existing: Channel? = null
@@ -48,6 +50,8 @@ class ChannelEditActivity : AppCompatActivity() {
     private lateinit var tvgId: TextInputEditText
     private lateinit var ua: TextInputEditText
     private lateinit var referer: TextInputEditText
+    private lateinit var drmKeyId: TextInputEditText
+    private lateinit var drmKey: TextInputEditText
 
     private var playlists: List<Playlist> = emptyList()
     private var deleteMenuItem: MenuItem? = null
@@ -103,6 +107,8 @@ class ChannelEditActivity : AppCompatActivity() {
         tvgId = findViewById(R.id.edit_channel_tvgid)
         ua = findViewById(R.id.edit_channel_ua)
         referer = findViewById(R.id.edit_channel_referer)
+        drmKeyId = findViewById(R.id.edit_channel_drm_key_id)
+        drmKey = findViewById(R.id.edit_channel_drm_key)
 
         loadPlaylists()
     }
@@ -196,6 +202,8 @@ class ChannelEditActivity : AppCompatActivity() {
                 tvgId.setText(ch.tvgId)
                 ua.setText(ch.userAgent)
                 referer.setText(ch.referer)
+                drmKeyId.setText(ch.drmKeyId)
+                drmKey.setText(ch.drmKey)
                 val idx = list.indexOfFirst { it.id == ch.playlistId }.takeIf { it >= 0 } ?: 0
                 spinner.setSelection(idx, false)
             } else {
@@ -218,6 +226,8 @@ class ChannelEditActivity : AppCompatActivity() {
             data.getQueryParameter("t")?.takeIf { it.isNotBlank() }?.let { tvgId.setText(it) }
             data.getQueryParameter("ua")?.takeIf { it.isNotBlank() }?.let { ua.setText(it) }
             data.getQueryParameter("r")?.takeIf { it.isNotBlank() }?.let { referer.setText(it) }
+            data.getQueryParameter("d")?.takeIf { it.isNotBlank() }?.let { drmKeyId.setText(it) }
+            data.getQueryParameter("dk")?.takeIf { it.isNotBlank() }?.let { drmKey.setText(it) }
             return
         }
         intent.getStringExtra(EXTRA_PREFILL_NAME)?.takeIf { it.isNotBlank() }?.let { name.setText(it) }
@@ -227,6 +237,8 @@ class ChannelEditActivity : AppCompatActivity() {
         intent.getStringExtra(EXTRA_PREFILL_TVG)?.takeIf { it.isNotBlank() }?.let { tvgId.setText(it) }
         intent.getStringExtra(EXTRA_PREFILL_UA)?.takeIf { it.isNotBlank() }?.let { ua.setText(it) }
         intent.getStringExtra(EXTRA_PREFILL_REFERER)?.takeIf { it.isNotBlank() }?.let { referer.setText(it) }
+        intent.getStringExtra(EXTRA_PREFILL_DRM_KEY_ID)?.takeIf { it.isNotBlank() }?.let { drmKeyId.setText(it) }
+        intent.getStringExtra(EXTRA_PREFILL_DRM_KEY)?.takeIf { it.isNotBlank() }?.let { drmKey.setText(it) }
     }
 
     private fun save() {
@@ -253,6 +265,8 @@ class ChannelEditActivity : AppCompatActivity() {
                         streamUrl = s,
                         userAgent = ua.text?.toString()?.trim().orEmpty(),
                         referer = referer.text?.toString()?.trim().orEmpty(),
+                        drmKeyId = drmKeyId.text?.toString()?.trim().orEmpty(),
+                        drmKey = drmKey.text?.toString()?.trim().orEmpty(),
                         sortIndex = nextSort,
                         isUserAdded = true
                     ))
@@ -268,6 +282,8 @@ class ChannelEditActivity : AppCompatActivity() {
                         streamUrl = s,
                         userAgent = ua.text?.toString()?.trim().orEmpty(),
                         referer = referer.text?.toString()?.trim().orEmpty(),
+                        drmKeyId = drmKeyId.text?.toString()?.trim().orEmpty(),
+                        drmKey = drmKey.text?.toString()?.trim().orEmpty(),
                         sortIndex = sort
                     ))
                 }

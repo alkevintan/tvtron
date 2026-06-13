@@ -27,6 +27,10 @@ data class Channel(
     val streamUrl: String,
     val userAgent: String = "",
     val referer: String = "",
+    /** ClearKey DRM key ID in hex format (16 bytes = 32 hex chars). */
+    val drmKeyId: String = "",
+    /** ClearKey DRM key in hex format (16 bytes = 32 hex chars). */
+    val drmKey: String = "",
     val sortIndex: Int = 0,
     /** Set to true for channels added by the user manually; survives M3U refresh. */
     val isUserAdded: Boolean = false

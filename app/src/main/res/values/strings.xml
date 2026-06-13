@@ -38,12 +38,16 @@
     <string name="channel_tvg_id">EPG channel id (tvg-id, optional)</string>
     <string name="channel_user_agent">User-Agent (optional)</string>
     <string name="channel_referer">Referer (optional)</string>
+    <string name="channel_drm_key_id">DRM Key ID (hex, optional)</string>
+    <string name="channel_drm_key">DRM Key (hex, optional)</string>
     <string name="channel_required_fields">Name and stream URL are required</string>
-    <string name="no_playlists">No playlists yet.\nTap + to add an M3U source.</string>
+    <string name="no_playlists">No playlists yet.\nTap + to add an M3U source or\ncreate a new empty playlist.</string>
     <string name="no_channels">No channels in this playlist.</string>
 
     <string name="playlist_name">Name</string>
-    <string name="playlist_source">M3U source (URL or local file)</string>
+    <string name="playlist_name_required">Playlist name is required</string>
+    <string name="playlist_source">M3U source (URL or local file, optional)</string>
+    <string name="playlist_source_optional_hint">Leave blank to create an empty playlist</string>
     <string name="pick_local_file">Pick local file</string>
     <string name="epg_url">EPG URL (XMLTV, optional)</string>
     <string name="auto_refresh">Auto-refresh</string>

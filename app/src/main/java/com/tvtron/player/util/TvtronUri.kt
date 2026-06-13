@@ -21,7 +21,9 @@ object TvtronUri {
             val groupTitle: String,
             val tvgId: String,
             val userAgent: String,
-            val referer: String
+            val referer: String,
+            val drmKeyId: String = "",
+            val drmKey: String = ""
         ) : Payload()
     }
 
@@ -49,7 +51,9 @@ object TvtronUri {
                         groupTitle = uri.getQueryParameter("g").orEmpty(),
                         tvgId = uri.getQueryParameter("t").orEmpty(),
                         userAgent = uri.getQueryParameter("ua").orEmpty(),
-                        referer = uri.getQueryParameter("r").orEmpty()
+                        referer = uri.getQueryParameter("r").orEmpty(),
+                        drmKeyId = uri.getQueryParameter("d").orEmpty(),
+                        drmKey = uri.getQueryParameter("dk").orEmpty()
                     )
                 }
                 else -> null
@@ -81,7 +85,9 @@ object TvtronUri {
         groupTitle: String = "",
         tvgId: String = "",
         userAgent: String = "",
-        referer: String = ""
+        referer: String = "",
+        drmKeyId: String = "",
+        drmKey: String = ""
     ): String =
         Uri.Builder().scheme("tvtron").authority("channel")
             .appendQueryParameter("n", name)
@@ -92,6 +98,8 @@ object TvtronUri {
                 if (tvgId.isNotBlank()) appendQueryParameter("t", tvgId)
                 if (userAgent.isNotBlank()) appendQueryParameter("ua", userAgent)
                 if (referer.isNotBlank()) appendQueryParameter("r", referer)
+                if (drmKeyId.isNotBlank()) appendQueryParameter("d", drmKeyId)
+                if (drmKey.isNotBlank()) appendQueryParameter("dk", drmKey)
             }
             .build().toString()
 }

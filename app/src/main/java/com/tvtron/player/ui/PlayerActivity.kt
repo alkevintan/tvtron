@@ -77,12 +77,21 @@ class PlayerActivity : AppCompatActivity() {
 
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
-            val s = (binder as? PlaybackService.LocalBinder)?.getService() ?: return
+            android.util.Log.d("PlayerActivity", "onServiceConnected called")
+            val s = (binder as? PlaybackService.LocalBinder)?.getService()
+            if (s == null) {
+                android.util.Log.e("PlayerActivity", "ERROR: Could not cast binder to LocalBinder or getService returned null")
+                return
+            }
+            android.util.Log.d("PlayerActivity", "Service bound successfully")
             service = s
             attachPlayer()
             loadAndPlay()
         }
-        override fun onServiceDisconnected(name: ComponentName?) { service = null }
+        override fun onServiceDisconnected(name: ComponentName?) {
+            android.util.Log.w("PlayerActivity", "onServiceDisconnected called")
+            service = null
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -121,8 +130,10 @@ class PlayerActivity : AppCompatActivity() {
         wireGestures()
         wireControls()
 
-        bindService(Intent(this, PlaybackService::class.java), connection, Context.BIND_AUTO_CREATE)
+        android.util.Log.d("PlayerActivity", "onCreate: Starting PlaybackService")
         startService(Intent(this, PlaybackService::class.java))
+        android.util.Log.d("PlayerActivity", "onCreate: Binding to PlaybackService")
+        bindService(Intent(this, PlaybackService::class.java), connection, Context.BIND_AUTO_CREATE)
     }
 
     override fun onStart() {
@@ -156,17 +167,24 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     private fun loadAndPlay() {
-        if (channelId <= 0L) { finish(); return }
+        if (channelId <= 0L) { android.util.Log.e("PlayerActivity", "loadAndPlay: channelId invalid ($channelId)"); finish(); return }
         lifecycleScope.launch {
             val db = AppDatabase.getInstance(this@PlayerActivity)
-            val ch = db.channelDao().getById(channelId) ?: run { finish(); return@launch }
+            val ch = db.channelDao().getById(channelId) 
+            if (ch == null) {
+                android.util.Log.e("PlayerActivity", "loadAndPlay: Channel not found for id=$channelId")
+                finish()
+                return@launch
+            }
+            android.util.Log.d("PlayerActivity", "loadAndPlay: Got channel: ${ch.name}, url=${ch.streamUrl}")
             currentChannel = ch
             siblings = db.channelDao().getForPlaylist(ch.playlistId)
             titleView.text = ch.name
             updateChannelNumber()
             updateFavIcon()
             loadEpg(ch)
-            service?.play(ch)
+            android.util.Log.d("PlayerActivity", "About to call service.play(ch)")
+            service?.play(ch) ?: android.util.Log.e("PlayerActivity", "ERROR: service is null!")
             observePlayer()
             setOverlayVisible(true)
             SettingsManager.setLastChannelId(this@PlayerActivity, ch.id)

@@ -14,6 +14,7 @@ import android.os.PowerManager
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
+import android.util.Base64
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LifecycleService
 import com.google.android.exoplayer2.C
@@ -23,6 +24,12 @@ import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.PlaybackException
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.audio.AudioAttributes
+import com.google.android.exoplayer2.drm.DefaultDrmSessionManager
+import com.google.android.exoplayer2.drm.DrmSessionManager
+import com.google.android.exoplayer2.drm.DrmSessionManagerProvider
+import com.google.android.exoplayer2.drm.ExoMediaDrm
+import com.google.android.exoplayer2.drm.FrameworkMediaDrm
+import com.google.android.exoplayer2.drm.MediaDrmCallback
 import com.google.android.exoplayer2.ext.okhttp.OkHttpDataSource
 import com.google.android.exoplayer2.source.DefaultMediaSourceFactory
 import com.google.android.exoplayer2.source.MediaSource
@@ -38,6 +45,7 @@ import com.google.android.exoplayer2.util.Util
 import com.tvtron.player.MainActivity
 import com.tvtron.player.R
 import com.tvtron.player.data.Channel
+import java.util.UUID
 import com.tvtron.player.util.HttpClientFactory
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -75,21 +83,65 @@ class PlaybackService : LifecycleService() {
         const val ACTION_STOP = "com.tvtron.player.STOP"
     }
 
+    /**
+     * Creates a [DrmSessionManager] for ClearKey DRM using the given hex-encoded key ID and key.
+     * The callback generates a JSON Web Key (JWK) Set response that Android's ClearKey
+     * MediaDrm plugin understands.
+     */
+    private fun createClearKeyDrmSessionManager(keyIdHex: String, keyHex: String): DrmSessionManager {
+        val keyId = hexToByteArray(keyIdHex)
+        val key = hexToByteArray(keyHex)
+
+        val callback = object : MediaDrmCallback {
+            override fun executeKeyRequest(uuid: UUID, request: ExoMediaDrm.KeyRequest): ByteArray {
+                val kidB64 = Base64.encodeToString(
+                    keyId, Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP
+                )
+                val kB64 = Base64.encodeToString(
+                    key, Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP
+                )
+                return ("""{"keys":[{"kty":"oct","kid":"$kidB64","k":"$kB64"}],"type":"temporary"}""")
+                    .toByteArray(Charsets.UTF_8)
+            }
+
+            override fun executeProvisionRequest(uuid: UUID, request: ExoMediaDrm.ProvisionRequest): ByteArray {
+                return ByteArray(0)
+            }
+        }
+
+        return DefaultDrmSessionManager.Builder()
+            .setUuidAndExoMediaDrmProvider(C.CLEARKEY_UUID) { FrameworkMediaDrm.newInstance(it) }
+            .setMultiSession(true)
+            .build(callback)
+    }
+
+    /** Converts a hex string (e.g. "a1b2c3d4...") to a byte array. */
+    private fun hexToByteArray(hex: String): ByteArray {
+        val s = hex.filter { !it.isWhitespace() }
+        return ByteArray(s.length / 2) {
+            ((Character.digit(s[it * 2], 16) shl 4) + Character.digit(s[it * 2 + 1], 16)).toByte()
+        }
+    }
+
     override fun onCreate() {
         super.onCreate()
+        android.util.Log.d("PlaybackService", "onCreate() called")
         createNotificationChannel()
         initWakeLock()
         initMediaSession()
         initPlayer()
+        android.util.Log.d("PlaybackService", "onCreate() complete")
     }
 
     override fun onBind(intent: Intent): IBinder {
         super.onBind(intent)
+        android.util.Log.d("PlaybackService", "onBind() called")
         return binder
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
+        android.util.Log.d("PlaybackService", "onStartCommand() called with action=${intent?.action}")
         when (intent?.action) {
             ACTION_PLAY -> exoPlayer?.play()
             ACTION_PAUSE -> exoPlayer?.pause()
@@ -153,42 +205,84 @@ class PlaybackService : LifecycleService() {
     }
 
     fun play(channel: Channel) {
+        android.util.Log.d("PlaybackService", "play() called: channel=${channel.name}, url=${channel.streamUrl}")
         _currentChannel.value = channel
         _errorMessage.value = null
         val uri = android.net.Uri.parse(channel.streamUrl)
-        val mediaItem = MediaItem.fromUri(uri)
+        android.util.Log.d("PlaybackService", "Parsed URI: $uri")
+        val mediaItemBuilder = MediaItem.Builder().setUri(uri)
+        val hasDrm = channel.drmKeyId.isNotBlank() && channel.drmKey.isNotBlank()
+        if (hasDrm) {
+            android.util.Log.i("PlaybackService", "Channel has ClearKey DRM: kid=${channel.drmKeyId.take(8)}..., key=${channel.drmKey.take(8)}...")
+            mediaItemBuilder.setDrmConfiguration(
+                MediaItem.DrmConfiguration.Builder(C.CLEARKEY_UUID).build()
+            )
+        }
+        val mediaItem = mediaItemBuilder.build()
         val source = createMediaSource(channel, mediaItem)
+        android.util.Log.d("PlaybackService", "MediaSource created: $source")
         exoPlayer?.apply {
+            android.util.Log.d("PlaybackService", "Setting media source and preparing")
             setMediaSource(source)
             prepare()
             playWhenReady = true
-        }
+            android.util.Log.d("PlaybackService", "playWhenReady=true")
+        } ?: android.util.Log.e("PlaybackService", "ERROR: exoPlayer is null!")
         updateMetadata(channel)
         startForegroundCompat()
         acquireWakeLock()
     }
 
     private fun createMediaSource(channel: Channel, mediaItem: MediaItem): MediaSource {
+        android.util.Log.d("PlaybackService", "createMediaSource() enter: streamUrl=${channel.streamUrl}")
         val httpFactory = buildHttpFactory(channel.userAgent, channel.referer)
-        val dataFactory = DefaultDataSource.Factory(this, httpFactory)
+        val dataSourceFactory = DefaultDataSource.Factory(this, httpFactory)
         val uri = mediaItem.localConfiguration!!.uri
         val type = Util.inferContentType(uri)
-        return when (type) {
-            C.CONTENT_TYPE_HLS -> HlsMediaSource.Factory(dataFactory).createMediaSource(mediaItem)
-            C.CONTENT_TYPE_DASH -> DashMediaSource.Factory(dataFactory).createMediaSource(mediaItem)
-            C.CONTENT_TYPE_SS -> SsMediaSource.Factory(dataFactory).createMediaSource(mediaItem)
-            C.CONTENT_TYPE_RTSP -> RtspMediaSource.Factory().createMediaSource(mediaItem)
+        android.util.Log.d("PlaybackService", "Inferred content type: $type for URI: $uri")
+
+        // Create DrmSessionManager for ClearKey when the channel has DRM keys.
+        val drmSessionManager = if (channel.drmKeyId.isNotBlank() && channel.drmKey.isNotBlank()) {
+            android.util.Log.d("PlaybackService", "Creating DRM session manager for ClearKey")
+            createClearKeyDrmSessionManager(channel.drmKeyId, channel.drmKey)
+        } else null
+
+        val source = when (type) {
+            C.CONTENT_TYPE_DASH -> {
+                android.util.Log.d("PlaybackService", "Creating DASH MediaSource")
+                val factory = DefaultMediaSourceFactory(dataSourceFactory)
+                if (drmSessionManager != null) {
+                    factory.setDrmSessionManagerProvider(DrmSessionManagerProvider { drmSessionManager })
+                }
+                factory.createMediaSource(mediaItem)
+            }
+            C.CONTENT_TYPE_HLS -> {
+                android.util.Log.d("PlaybackService", "Creating HLS MediaSource")
+                HlsMediaSource.Factory(dataSourceFactory).createMediaSource(mediaItem)
+            }
+            C.CONTENT_TYPE_SS -> {
+                android.util.Log.d("PlaybackService", "Creating Smooth Streaming MediaSource")
+                SsMediaSource.Factory(dataSourceFactory).createMediaSource(mediaItem)
+            }
+            C.CONTENT_TYPE_RTSP -> {
+                android.util.Log.d("PlaybackService", "Creating RTSP MediaSource")
+                RtspMediaSource.Factory().createMediaSource(mediaItem)
+            }
             else -> {
                 // CONTENT_TYPE_OTHER: extension-less or token-based IPTV URLs.
                 // 90%+ of HTTP IPTV is HLS; default to HLS for http(s), progressive otherwise.
                 val s = channel.streamUrl.lowercase()
                 if (s.startsWith("http://") || s.startsWith("https://")) {
-                    HlsMediaSource.Factory(dataFactory).createMediaSource(mediaItem)
+                    android.util.Log.d("PlaybackService", "CONTENT_TYPE_OTHER with http(s) - defaulting to HLS")
+                    HlsMediaSource.Factory(dataSourceFactory).createMediaSource(mediaItem)
                 } else {
-                    ProgressiveMediaSource.Factory(dataFactory).createMediaSource(mediaItem)
+                    android.util.Log.d("PlaybackService", "CONTENT_TYPE_OTHER with non-http - using Progressive")
+                    ProgressiveMediaSource.Factory(dataSourceFactory).createMediaSource(mediaItem)
                 }
             }
         }
+        android.util.Log.d("PlaybackService", "createMediaSource() complete, returning: $source")
+        return source
     }
 
     fun pause() { exoPlayer?.pause() }

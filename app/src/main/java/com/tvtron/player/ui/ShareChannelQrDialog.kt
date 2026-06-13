@@ -29,6 +29,8 @@ class ShareChannelQrDialog : BottomSheetDialogFragment() {
                 putString("tvg", channel.tvgId)
                 putString("ua", channel.userAgent)
                 putString("ref", channel.referer)
+                putString("drmKeyId", channel.drmKeyId)
+                putString("drmKey", channel.drmKey)
             }
         }
     }
@@ -41,9 +43,18 @@ class ShareChannelQrDialog : BottomSheetDialogFragment() {
         val a = requireArguments()
         val name = a.getString("name").orEmpty()
         val stream = a.getString("stream").orEmpty()
+        val drmKeyId = a.getString("drmKeyId").orEmpty()
+        val drmKey = a.getString("drmKey").orEmpty()
+        val hasDrm = drmKeyId.isNotBlank() && drmKey.isNotBlank()
+
         view.findViewById<TextView>(R.id.qrHeader).text = "Share Channel"
         view.findViewById<TextView>(R.id.qrPlaylistName).text = name
         view.findViewById<TextView>(R.id.qrSourceUrl).text = stream
+
+        // Show a DRM badge next to the name if this is an encrypted channel.
+        if (hasDrm) {
+            view.findViewById<TextView>(R.id.qrDrmBadge)?.visibility = View.VISIBLE
+        }
 
         val payload = TvtronUri.encodeChannel(
             name = name,
@@ -52,7 +63,9 @@ class ShareChannelQrDialog : BottomSheetDialogFragment() {
             groupTitle = a.getString("group").orEmpty(),
             tvgId = a.getString("tvg").orEmpty(),
             userAgent = a.getString("ua").orEmpty(),
-            referer = a.getString("ref").orEmpty()
+            referer = a.getString("ref").orEmpty(),
+            drmKeyId = drmKeyId,
+            drmKey = drmKey
         )
         try {
             view.findViewById<ImageView>(R.id.qrImageView).setImageBitmap(QrCodeGenerator.generateBitmap(payload, 640))
@@ -60,10 +73,13 @@ class ShareChannelQrDialog : BottomSheetDialogFragment() {
             view.findViewById<ImageView>(R.id.qrImageView).setImageDrawable(null)
         }
 
+        // Copy the full tvtron:// deep link so DRM keys are preserved on the clipboard.
+        val copyText = if (hasDrm) payload else stream
         view.findViewById<com.google.android.material.button.MaterialButton>(R.id.qrCopyButton).setOnClickListener {
             val clipboard = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-            clipboard.setPrimaryClip(ClipData.newPlainText("TVTron channel URL", stream))
-            Toast.makeText(requireContext(), "URL copied", Toast.LENGTH_SHORT).show()
+            clipboard.setPrimaryClip(ClipData.newPlainText("TVTron channel URL", copyText))
+            val label = if (hasDrm) "Deep link with DRM keys copied" else "URL copied"
+            Toast.makeText(requireContext(), label, Toast.LENGTH_SHORT).show()
         }
     }
 }

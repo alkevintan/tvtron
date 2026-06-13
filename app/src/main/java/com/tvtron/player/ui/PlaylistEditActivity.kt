@@ -5,6 +5,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.widget.Button
 import android.widget.RadioGroup
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
@@ -110,9 +111,13 @@ class PlaylistEditActivity : AppCompatActivity() {
 
     private fun build(): Playlist? {
         val n = name.text?.toString()?.trim().orEmpty()
+        if (n.isEmpty()) {
+            Toast.makeText(this, R.string.playlist_name_required, Toast.LENGTH_SHORT).show()
+            return null
+        }
         val s = source.text?.toString()?.trim().orEmpty()
-        if (n.isEmpty() || s.isEmpty()) return null
-        val mode = when (group.checkedRadioButtonId) {
+        // Blank playlists (no M3U source) can't be refreshed.
+        val mode = if (s.isBlank()) AutoRefreshMode.OFF else when (group.checkedRadioButtonId) {
             R.id.refresh_off -> AutoRefreshMode.OFF
             R.id.refresh_scheduled -> AutoRefreshMode.SCHEDULED
             else -> AutoRefreshMode.ON_LAUNCH
